@@ -9,7 +9,7 @@ export const ScreenContent = () => {
   return (
     <View className="flex flex-1 flex-col items-center justify-center gap-4 border bg-white">
       <Text className="text-xl font-bold">Welcome to Togheta</Text>
-      <Image className="h-36 w-36 rounded-full" source={require('../assets/image.png')} />
+      <Image className="h-36 w-36 rounded-full" source={require('../../assets/image.png')} />
       <Pressable onPress={onPressFunction} className="rounded-lg bg-blue-500 px-4 py-2">
         <Text className="text-white">I'm pressable!</Text>
       </Pressable>
