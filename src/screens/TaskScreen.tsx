@@ -80,10 +80,11 @@ const TaskScreen = () => {
     };
 
     loadTasks();
+    console.log(tasks)
   }, [familyId]);
 
   return (
-    <View className="flex p-4" style={styles.container}>
+    <View className="flex p-4">
       {/* Header */}
       <View>
         <Text className="mb-6 mt-10 text-2xl font-bold text-gray-900">Family Tasks</Text>
@@ -110,7 +111,7 @@ const TaskScreen = () => {
       </View>
 
       {/* Tasks List */}
-      <View className="flex-1">
+      <View className="">
         <Text className="mb-3 text-lg font-semibold text-gray-700">Tasks ({tasks.length})</Text>
 
         {tasks.length === 0 ? (
@@ -129,13 +130,4 @@ const TaskScreen = () => {
     </View>
   );
 };
-const styles = StyleSheet.create({
-  container: {
-    marginTop: 50,
-    marginLeft: 16,
-    marginRight: 16,
-    padding: 16,
-    borderWidth: 1,
-  },
-});
 export default TaskScreen;
