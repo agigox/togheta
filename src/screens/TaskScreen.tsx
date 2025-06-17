@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, TextInput, View, Text, Pressable, FlatList } from 'react-native';
 import { addTask, getTasksForFamily, toggleTask } from '~/firebase/tasks';
-import { Task } from '../modals/Task'; // Assuming you have a Task type defined in your types file
-
+import { Task } from '../modals/Task';
+import { Icon } from '~/components/Icon';
 const TaskScreen = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -53,7 +53,7 @@ const TaskScreen = () => {
     const { id, title, completed } = item;
     return (
       <View className="flex-row items-center justify-between border-b border-gray-200 p-4">
-        <Text className="text-base text-gray-800">
+        <Text className="font-grotesk text-base text-gray-800">
           {title} - {completed ? 'Completed' : 'Incomplete'}
         </Text>
         <Pressable
@@ -87,6 +87,7 @@ const TaskScreen = () => {
     <View className="flex-1 border-black p-4">
       {/* Header */}
       <View>
+        <Icon name="SparklesIcon" variant="solid" size={64} color="#22C55E" />
         <Text className="mb-6 mt-10 text-2xl font-bold text-gray-900">Family Tasks</Text>
       </View>
       {/* Add Task Section */}
