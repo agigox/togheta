@@ -32,6 +32,7 @@ export function subscribeToTasks(familyId: string, callback: (tasks: any[]) => v
 export async function toggleTask(taskId: string, current: boolean) {
   const db = getDB();
   const ref = doc(db, 'tasks', taskId);
+  debugger;
   await updateDoc(ref, { completed: !current });
 }
 // Get all tasks for a family

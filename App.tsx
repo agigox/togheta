@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import './global.css';
-import TaskScreen from './src/screens/TaskScreen';
+import { TaskScreen } from './src/features/tasks';
 import {
   useFonts,
   SpaceGrotesk_300Light,

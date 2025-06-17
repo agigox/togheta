@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, TextInput, View, Text, Pressable, FlatList } from 'react-native';
+import { Alert, View } from 'react-native';
 import { addTask, getTasksForFamily, toggleTask } from '~/firebase/tasks';
-import { Task } from '../modals/Task';
-import { Icon } from '~/components/Icon';
+import { Task } from '../../modals/Task';
+import TaskHeader from './components/TaskHeader';
+import TaskList from './components/TaskList';
+import AddTaskForm from './components/AddTaskForm';
 const TaskScreen = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -49,21 +51,6 @@ const TaskScreen = () => {
       Alert.alert('Error', 'Failed to update task');
     }
   };
-  const renderTask = ({ item }: { item: Task }) => {
-    const { id, title, completed } = item;
-    return (
-      <View className="flex-row items-center justify-between border-b border-gray-200 p-4">
-        <Text className="font-grotesk text-base text-gray-800">
-          {title} - {completed ? 'Completed' : 'Incomplete'}
-        </Text>
-        <Pressable
-          onPress={() => handleToggleTask(id, completed)}
-          className="rounded-full bg-blue-500 px-3 py-1">
-          <Text className="text-sm text-white">Toggle</Text>
-        </Pressable>
-      </View>
-    );
-  };
   // Load tasks when component mounts
   useEffect(() => {
     const loadTasks = async () => {
@@ -84,50 +71,22 @@ const TaskScreen = () => {
   }, [familyId]);
 
   return (
-    <View className="flex-1 border-black p-4">
-      {/* Header */}
-      <View>
-        <Icon name="SparklesIcon" variant="solid" size={64} color="#22C55E" />
-        <Text className="mb-6 mt-10 text-2xl font-bold text-gray-900">Family Tasks</Text>
-      </View>
-      {/* Add Task Section */}
-      <View className="mb-6">
-        <TextInput
-          value={newTaskTitle}
-          onChangeText={setNewTaskTitle}
-          placeholder="Enter new task..."
-          className="mb-3 rounded-lg border border-gray-300 p-4 text-base"
-          multiline={false}
-          returnKeyType="done"
-          onSubmitEditing={handleAddTask}
-        />
-        <Pressable
-          onPress={handleAddTask}
-          className={`rounded-lg py-3 ${isLoading ? 'bg-gray-400' : 'bg-blue-500'}`}>
-          <Text className="text-center text-base font-semibold text-white">
-            {isLoading ? 'Adding...' : 'Add Task'}
-          </Text>
-        </Pressable>
-      </View>
+    <View className="bg-background flex-1">
+      {/* Fixed Header */}
+      <TaskHeader taskCount={tasks.length} />
 
       {/* Tasks List */}
-      <View style={{ flex: 1 }}>
-        <Text className="mb-3 text-lg font-semibold text-gray-700">Tasks ({tasks.length})</Text>
-
-        {tasks.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-gray-500">No tasks yet. Add one above!</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={tasks}
-            renderItem={renderTask}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 24 }}
-          />
-        )}
+      <View className="flex-1 px-4 pt-4">
+        <TaskList tasks={tasks} isLoading={isLoadingTasks} onToggleTask={handleToggleTask} />
       </View>
+
+      {/* Floating Add Task Form */}
+      <AddTaskForm
+        newTaskTitle={newTaskTitle}
+        onTaskTitleChange={setNewTaskTitle}
+        onSubmit={handleAddTask}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
