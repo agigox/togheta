@@ -1,6 +1,9 @@
 import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { Icon } from './Icon';
+import * as SolidIcons from 'react-native-heroicons/solid';
+
+type IconName = keyof typeof SolidIcons;
 
 interface ButtonProps {
   title: string;
@@ -9,9 +12,10 @@ interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
-  icon?: string;
+  icon?: IconName;
   iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
+  testID?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -24,6 +28,7 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   iconPosition = 'left',
   fullWidth = false,
+  testID,
 }) => {
   const sizeClasses = {
     sm: 'px-3 py-2',
@@ -90,6 +95,9 @@ const Button: React.FC<ButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
       className={`
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : 'self-start'}
@@ -101,7 +109,7 @@ const Button: React.FC<ButtonProps> = ({
       `}>
       {icon && iconPosition === 'left' && !loading && (
         <Icon
-          name="ArrowPathIcon"
+          name={icon}
           size={iconSizes[size]}
           color={variant === 'outline' || variant === 'ghost' ? '#111111' : '#FFFFFF'}
           variant="outline"
@@ -129,7 +137,7 @@ const Button: React.FC<ButtonProps> = ({
 
       {icon && iconPosition === 'right' && !loading && (
         <Icon
-          name="ArrowPathIcon"
+          name={icon}
           size={iconSizes[size]}
           color={variant === 'outline' || variant === 'ghost' ? '#111111' : '#FFFFFF'}
           variant="outline"
