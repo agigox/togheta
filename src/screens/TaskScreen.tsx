@@ -80,11 +80,11 @@ const TaskScreen = () => {
     };
 
     loadTasks();
-    console.log(tasks)
+    console.log(tasks);
   }, [familyId]);
 
   return (
-    <View className="flex p-4">
+    <View className="flex-1 border-black p-4">
       {/* Header */}
       <View>
         <Text className="mb-6 mt-10 text-2xl font-bold text-gray-900">Family Tasks</Text>
@@ -102,7 +102,6 @@ const TaskScreen = () => {
         />
         <Pressable
           onPress={handleAddTask}
-          // disabled={isLoading}
           className={`rounded-lg py-3 ${isLoading ? 'bg-gray-400' : 'bg-blue-500'}`}>
           <Text className="text-center text-base font-semibold text-white">
             {isLoading ? 'Adding...' : 'Add Task'}
@@ -111,7 +110,7 @@ const TaskScreen = () => {
       </View>
 
       {/* Tasks List */}
-      <View className="">
+      <View style={{ flex: 1 }}>
         <Text className="mb-3 text-lg font-semibold text-gray-700">Tasks ({tasks.length})</Text>
 
         {tasks.length === 0 ? (
@@ -124,6 +123,7 @@ const TaskScreen = () => {
             renderItem={renderTask}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 24 }}
           />
         )}
       </View>
