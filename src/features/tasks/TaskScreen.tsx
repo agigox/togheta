@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { addTask, getTasksForFamily, toggleTask } from '~/firebase/tasks';
-import { Task } from '../../modals/Task';
+import { useTasks } from '../../hooks/useTasks';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
 const TaskScreen = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [newlyAddedTaskId, setNewlyAddedTaskId] = useState<string | undefined>(undefined);
 
   // Keep track of timeout to clean it up if needed
@@ -18,6 +15,17 @@ const TaskScreen = () => {
 
   // Mock family ID for now - you'll get this from your auth context later
   const familyId = 'family123';
+
+  // Use the custom hook
+  const { tasks, loading: isLoadingTasks, error, addTask, toggleTask } = useTasks(familyId);
+
+  // Handle Firebase errors
+  useEffect(() => {
+    if (error) {
+      Alert.alert('Database Error', error);
+    }
+  }, [error]);
+
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) {
       Alert.alert('Error', 'Please enter a task title');
@@ -25,26 +33,16 @@ const TaskScreen = () => {
     }
     setIsLoading(true);
     try {
-      await addTask(newTaskTitle.trim(), familyId);
+      const currentTitle = newTaskTitle.trim();
+      await addTask(currentTitle);
       setNewTaskTitle('');
 
       // Dismiss the keyboard
       Keyboard.dismiss();
 
-      const newTaskId = Date.now().toString();
-      setTasks((prevTasks) => [
-        {
-          id: newTaskId,
-          title: newTaskTitle.trim(),
-          completed: false,
-          createdAt: new Date(),
-          familyId,
-        }, // Mock ID for now
-        ...prevTasks,
-      ]);
-
-      // Set the newly added task ID for visual feedback
-      setNewlyAddedTaskId(newTaskId);
+      // Set the newly added task title for visual feedback
+      // We'll match by title and recent creation time
+      setNewlyAddedTaskId(currentTitle);
 
       // Clear any existing timeout
       if (highlightTimeout) {
@@ -58,9 +56,6 @@ const TaskScreen = () => {
       }, 3000);
 
       setHighlightTimeout(timeoutId);
-
-      // Alert.alert('Success', 'Task added successfully!');
-      // In a real app, subscribeToTasks would update the list automatically
     } catch (error) {
       console.error('Error adding task:', error);
       Alert.alert('Error', 'Failed to add task');
@@ -68,45 +63,15 @@ const TaskScreen = () => {
       setIsLoading(false);
     }
   };
+
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
     try {
       await toggleTask(taskId, currentStatus);
-      // Update local state optimistically
-      const updatedTasks = (await getTasksForFamily(familyId)) as Task[];
-      // Sort tasks by creation date, newest first
-      const sortedTasks = updatedTasks.sort((a, b) => {
-        if (!a.createdAt || !b.createdAt) return 0;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-      setTasks(sortedTasks);
     } catch (error) {
       console.error('Error toggling task:', error);
       Alert.alert('Error', 'Failed to update task');
     }
   };
-  // Load tasks when component mounts
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        setIsLoadingTasks(true);
-        const familyTasks = (await getTasksForFamily(familyId)) as Task[];
-        // Sort tasks by creation date, newest first
-        const sortedTasks = familyTasks.sort((a, b) => {
-          if (!a.createdAt || !b.createdAt) return 0;
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-        setTasks(sortedTasks);
-      } catch (error) {
-        console.error('Error loading tasks:', error);
-        Alert.alert('Error', 'Failed to load tasks');
-      } finally {
-        setIsLoadingTasks(false);
-      }
-    };
-
-    loadTasks();
-    console.log(tasks);
-  }, [familyId]);
 
   // Cleanup timeout when component unmounts
   useEffect(() => {

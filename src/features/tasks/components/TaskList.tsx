@@ -43,15 +43,23 @@ const TaskList: React.FC<TaskListProps> = ({
   return (
     <FlatList
       data={tasks}
-      renderItem={({ item }) => (
-        <TaskCard
-          task={item}
-          onToggle={onToggleTask}
-          onDelete={onDeleteTask}
-          onEdit={onEditTask}
-          isNewlyAdded={item.id === newlyAddedTaskId}
-        />
-      )}
+      renderItem={({ item }) => {
+        // Check if this task was recently added (within last 5 seconds and matches title)
+        const isRecentlyAdded =
+          newlyAddedTaskId === item.title &&
+          item.createdAt &&
+          Date.now() - new Date(item.createdAt).getTime() < 5000;
+
+        return (
+          <TaskCard
+            task={item}
+            onToggle={onToggleTask}
+            onDelete={onDeleteTask}
+            onEdit={onEditTask}
+            isNewlyAdded={isRecentlyAdded}
+          />
+        );
+      }}
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 150 }}
