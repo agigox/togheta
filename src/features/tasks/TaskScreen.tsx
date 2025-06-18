@@ -23,7 +23,6 @@ const TaskScreen = () => {
       await addTask(newTaskTitle.trim(), familyId);
       setNewTaskTitle('');
       setTasks((prevTasks) => [
-        ...prevTasks,
         {
           id: Date.now().toString(),
           title: newTaskTitle.trim(),
@@ -31,6 +30,7 @@ const TaskScreen = () => {
           createdAt: new Date(),
           familyId,
         }, // Mock ID for now
+        ...prevTasks,
       ]);
       Alert.alert('Success', 'Task added successfully!');
       // In a real app, subscribeToTasks would update the list automatically
@@ -46,7 +46,12 @@ const TaskScreen = () => {
       await toggleTask(taskId, currentStatus);
       // Update local state optimistically
       const updatedTasks = (await getTasksForFamily(familyId)) as Task[];
-      setTasks(updatedTasks);
+      // Sort tasks by creation date, newest first
+      const sortedTasks = updatedTasks.sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      setTasks(sortedTasks);
     } catch (error) {
       console.error('Error toggling task:', error);
       Alert.alert('Error', 'Failed to update task');
@@ -58,7 +63,12 @@ const TaskScreen = () => {
       try {
         setIsLoadingTasks(true);
         const familyTasks = (await getTasksForFamily(familyId)) as Task[];
-        setTasks(familyTasks);
+        // Sort tasks by creation date, newest first
+        const sortedTasks = familyTasks.sort((a, b) => {
+          if (!a.createdAt || !b.createdAt) return 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        setTasks(sortedTasks);
       } catch (error) {
         console.error('Error loading tasks:', error);
         Alert.alert('Error', 'Failed to load tasks');

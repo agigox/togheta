@@ -22,10 +22,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit })
   };
 
   return (
-    <View className="border-border bg-background mb-3 rounded-lg border p-4 shadow-sm">
+    <View className="border-border bg-background mb-2  rounded-lg border-2 p-2 shadow-sm">
       <View className="flex-row items-start justify-between">
         {/* Left side - Checkbox and content */}
-        <View className="flex-1 flex-row items-start space-x-3">
+        <View className="flex-1 flex-row items-start gap-2 space-x-3">
           <View className="pt-1">
             <Checkbox
               checked={task.completed || false}
@@ -74,7 +74,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit })
         </View>
       </View>
 
-      {/* Task status indicator */}
+      {/* Task status indicator
       <View className="mt-3 flex-row items-center justify-between">
         <View
           className={`rounded-full px-2 py-1 ${
@@ -95,7 +95,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit })
             <Text className="text-2xs font-semiBold text-white">Mark Complete</Text>
           </Pressable>
         )}
-      </View>
+      </View> */}
     </View>
   );
 };
