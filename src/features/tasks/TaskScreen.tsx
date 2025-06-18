@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { addTask, getTasksForFamily, toggleTask } from '~/firebase/tasks';
 import { Task } from '../../modals/Task';
 import TaskHeader from './components/TaskHeader';
@@ -71,23 +72,28 @@ const TaskScreen = () => {
   }, [familyId]);
 
   return (
-    <View className="bg-background flex-1">
-      {/* Fixed Header */}
-      <TaskHeader taskCount={tasks.length} />
+    <SafeAreaView className="bg-background flex-1">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+        {/* Fixed Header */}
+        <TaskHeader taskCount={tasks.length} />
 
-      {/* Tasks List */}
-      <View className="flex-1 px-4 pt-4">
-        <TaskList tasks={tasks} isLoading={isLoadingTasks} onToggleTask={handleToggleTask} />
-      </View>
+        {/* Tasks List */}
+        <View className="flex-1 px-4 pt-4">
+          <TaskList tasks={tasks} isLoading={isLoadingTasks} onToggleTask={handleToggleTask} />
+        </View>
 
-      {/* Floating Add Task Form */}
-      <AddTaskForm
-        newTaskTitle={newTaskTitle}
-        onTaskTitleChange={setNewTaskTitle}
-        onSubmit={handleAddTask}
-        isLoading={isLoading}
-      />
-    </View>
+        {/* Floating Add Task Form */}
+        <AddTaskForm
+          newTaskTitle={newTaskTitle}
+          onTaskTitleChange={setNewTaskTitle}
+          onSubmit={handleAddTask}
+          isLoading={isLoading}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 export default TaskScreen;

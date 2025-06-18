@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TextInput } from 'react-native';
+import { View, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import Button from '../../../shared/components/Button';
 
 interface AddTaskFormProps {
@@ -16,30 +16,35 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
   isLoading,
 }) => {
   return (
-    <View className="absolute bottom-6 left-4 right-4">
-      <View className="mb-4">
-        <TextInput
-          value={newTaskTitle}
-          onChangeText={onTaskTitleChange}
-          placeholder="What needs to be done?"
-          className="border-border bg-background font-regular rounded-xl border p-4 text-base shadow-sm"
-          multiline={false}
-          returnKeyType="done"
-          onSubmitEditing={onSubmit}
-          placeholderTextColor="#9CA3AF"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="absolute bottom-0 left-0 right-0">
+      <View className="bg-background border-border border-t px-4 pb-6 pt-4 shadow-lg">
+        <View className="mb-4">
+          <TextInput
+            value={newTaskTitle}
+            onChangeText={onTaskTitleChange}
+            placeholder="What needs to be done?"
+            className="border-border bg-background font-regular rounded-xl border p-4 text-base shadow-sm"
+            multiline={false}
+            returnKeyType="done"
+            onSubmitEditing={onSubmit}
+            placeholderTextColor="#9CA3AF"
+            blurOnSubmit={true}
+          />
+        </View>
+        <Button
+          title={isLoading ? 'Adding...' : 'Add Task'}
+          onPress={onSubmit}
+          icon="PlusIcon"
+          variant="primary"
+          size="lg"
+          fullWidth={true}
+          disabled={isLoading || !newTaskTitle.trim()}
+          loading={isLoading}
         />
       </View>
-      <Button
-        title={isLoading ? 'Adding...' : 'Add Task'}
-        onPress={onSubmit}
-        icon="PlusIcon"
-        variant="primary"
-        size="lg"
-        fullWidth={true}
-        disabled={isLoading || !newTaskTitle.trim()}
-        loading={isLoading}
-      />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

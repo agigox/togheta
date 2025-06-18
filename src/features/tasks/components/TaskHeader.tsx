@@ -8,7 +8,7 @@ interface TaskHeaderProps {
 
 const TaskHeader: React.FC<TaskHeaderProps> = ({ taskCount }) => {
   return (
-    <View className="bg-background border-border border-b px-4 pb-4 pt-12">
+    <View className="bg-background border-border border-b px-4 pb-4 pt-4">
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
           <Icon name="SparklesIcon" variant="solid" size={32} color="#FFB020" />
