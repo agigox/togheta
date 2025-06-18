@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { addTask, getTasksForFamily, toggleTask } from '~/firebase/tasks';
 import { Task } from '../../modals/Task';
@@ -27,6 +27,10 @@ const TaskScreen = () => {
     try {
       await addTask(newTaskTitle.trim(), familyId);
       setNewTaskTitle('');
+
+      // Dismiss the keyboard
+      Keyboard.dismiss();
+
       const newTaskId = Date.now().toString();
       setTasks((prevTasks) => [
         {
