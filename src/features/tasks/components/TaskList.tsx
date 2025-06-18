@@ -10,6 +10,7 @@ interface TaskListProps {
   onToggleTask: (taskId: string, currentStatus: boolean) => void;
   onDeleteTask?: (taskId: string) => void;
   onEditTask?: (taskId: string) => void;
+  newlyAddedTaskId?: string;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
@@ -18,6 +19,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onToggleTask,
   onDeleteTask,
   onEditTask,
+  newlyAddedTaskId,
 }) => {
   if (isLoading) {
     return (
@@ -42,7 +44,13 @@ const TaskList: React.FC<TaskListProps> = ({
     <FlatList
       data={tasks}
       renderItem={({ item }) => (
-        <TaskCard task={item} onToggle={onToggleTask} onDelete={onDeleteTask} onEdit={onEditTask} />
+        <TaskCard
+          task={item}
+          onToggle={onToggleTask}
+          onDelete={onDeleteTask}
+          onEdit={onEditTask}
+          isNewlyAdded={item.id === newlyAddedTaskId}
+        />
       )}
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}

@@ -9,9 +9,16 @@ interface TaskCardProps {
   onToggle: (taskId: string, currentStatus: boolean) => void;
   onDelete?: (taskId: string) => void;
   onEdit?: (taskId: string) => void;
+  isNewlyAdded?: boolean;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit }) => {
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onToggle,
+  onDelete,
+  onEdit,
+  isNewlyAdded = false,
+}) => {
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
@@ -22,7 +29,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onToggle, onDelete, onEdit })
   };
 
   return (
-    <View className="border-border bg-background mb-2  rounded-lg border-2 p-2 shadow-sm">
+    <View
+      className={`border-border mb-2 rounded-lg border-2 p-2 shadow-sm ${
+        isNewlyAdded ? 'bg-green-100' : 'bg-background'
+      }`}>
       <View className="flex-row items-start justify-between">
         {/* Left side - Checkbox and content */}
         <View className="flex-1 flex-row items-start gap-2 space-x-3">

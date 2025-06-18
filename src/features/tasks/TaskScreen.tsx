@@ -11,6 +11,11 @@ const TaskScreen = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+  const [newlyAddedTaskId, setNewlyAddedTaskId] = useState<string | undefined>(undefined);
+
+  // Keep track of timeout to clean it up if needed
+  const [highlightTimeout, setHighlightTimeout] = useState<NodeJS.Timeout | null>(null);
+
   // Mock family ID for now - you'll get this from your auth context later
   const familyId = 'family123';
   const handleAddTask = async () => {
@@ -22,9 +27,10 @@ const TaskScreen = () => {
     try {
       await addTask(newTaskTitle.trim(), familyId);
       setNewTaskTitle('');
+      const newTaskId = Date.now().toString();
       setTasks((prevTasks) => [
         {
-          id: Date.now().toString(),
+          id: newTaskId,
           title: newTaskTitle.trim(),
           completed: false,
           createdAt: new Date(),
@@ -32,7 +38,24 @@ const TaskScreen = () => {
         }, // Mock ID for now
         ...prevTasks,
       ]);
-      Alert.alert('Success', 'Task added successfully!');
+
+      // Set the newly added task ID for visual feedback
+      setNewlyAddedTaskId(newTaskId);
+
+      // Clear any existing timeout
+      if (highlightTimeout) {
+        clearTimeout(highlightTimeout);
+      }
+
+      // Clear the newly added task ID after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setNewlyAddedTaskId(undefined);
+        setHighlightTimeout(null);
+      }, 3000);
+
+      setHighlightTimeout(timeoutId);
+
+      // Alert.alert('Success', 'Task added successfully!');
       // In a real app, subscribeToTasks would update the list automatically
     } catch (error) {
       console.error('Error adding task:', error);
@@ -81,6 +104,15 @@ const TaskScreen = () => {
     console.log(tasks);
   }, [familyId]);
 
+  // Cleanup timeout when component unmounts
+  useEffect(() => {
+    return () => {
+      if (highlightTimeout) {
+        clearTimeout(highlightTimeout);
+      }
+    };
+  }, [highlightTimeout]);
+
   return (
     <SafeAreaView className="bg-background flex-1">
       <KeyboardAvoidingView
@@ -92,7 +124,12 @@ const TaskScreen = () => {
 
         {/* Tasks List */}
         <View className="flex-1 px-4 pt-4">
-          <TaskList tasks={tasks} isLoading={isLoadingTasks} onToggleTask={handleToggleTask} />
+          <TaskList
+            tasks={tasks}
+            isLoading={isLoadingTasks}
+            onToggleTask={handleToggleTask}
+            newlyAddedTaskId={newlyAddedTaskId}
+          />
         </View>
 
         {/* Floating Add Task Form */}
