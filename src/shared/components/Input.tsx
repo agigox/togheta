@@ -3,7 +3,6 @@ import { TextInput, View, Text, StyleSheet } from 'react-native';
 import { colors } from '../utils/colors';
 
 interface InputProps {
-  label: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
@@ -15,7 +14,6 @@ interface InputProps {
 }
 
 const Input: React.FC<InputProps> = ({
-  label,
   value,
   onChangeText,
   placeholder,
@@ -27,11 +25,10 @@ const Input: React.FC<InputProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder || label}
+        placeholder={placeholder || ''}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
@@ -57,7 +54,6 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 2,
     borderColor: colors.border,
-    borderRadius: 12,
     padding: 16,
     fontSize: 16,
     backgroundColor: colors.background,

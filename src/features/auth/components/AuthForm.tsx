@@ -98,7 +98,6 @@ const AuthForm: React.FC = () => {
       {/* Form */}
       <View style={styles.formContainer}>
         <Input
-          label="Email"
           value={email}
           onChangeText={setEmail}
           placeholder="Enter your email"
@@ -109,7 +108,6 @@ const AuthForm: React.FC = () => {
         />
 
         <Input
-          label="Password"
           value={password}
           onChangeText={setPassword}
           placeholder="Enter your password"
@@ -121,7 +119,6 @@ const AuthForm: React.FC = () => {
 
         {activeTab === 'signup' && (
           <Input
-            label="Confirm Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             placeholder="Confirm your password"
@@ -161,7 +158,7 @@ const AuthForm: React.FC = () => {
           </Pressable>
 
           <View className="mt-4 flex-row justify-center">
-            <Text className="text-muted font-regular text-base">Don't have an account? </Text>
+            <Text className="text-muted font-regular text-base">{`Don't have an account?`} </Text>
             <Pressable onPress={() => handleTabChange('signup')}>
               <Text className="text-accent text-base font-medium">Sign Up</Text>
             </Pressable>
@@ -200,7 +197,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.muted,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '400',
     textAlign: 'center',
   },

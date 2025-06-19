@@ -5,7 +5,7 @@ import { AuthForm } from './components';
 
 const AuthScreen = () => {
   return (
-    <SafeAreaView className="bg-background flex-1">
+    <SafeAreaView className="bg-background flex-1 pt-[120px]">
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -13,7 +13,7 @@ const AuthScreen = () => {
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled">
-          <View className="flex-1 justify-center">
+          <View className="flex-1 justify-start">
             <AuthForm />
           </View>
         </ScrollView>
