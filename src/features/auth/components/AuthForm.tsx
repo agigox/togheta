@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { Button, Input } from '../../../shared/components';
+import { colors } from '../../../shared/utils/colors';
 import TabToggle from './TabToggle';
 
 const AuthForm: React.FC = () => {
@@ -191,14 +192,14 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    color: '#111111',
+    color: colors.primary,
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#9CA3AF',
+    color: colors.muted,
     fontSize: 16,
     fontWeight: '400',
     textAlign: 'center',

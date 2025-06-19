@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Icon } from '../../../shared/components/Icon';
+import { colors } from '../../../shared/utils/colors';
 
 interface TaskHeaderProps {
   taskCount: number;
@@ -11,7 +12,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({ taskCount }) => {
     <View className="bg-background border-border border-b px-4 pb-4 pt-4">
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center">
-          <Icon name="SparklesIcon" variant="solid" size={32} color="#FFB020" />
+          <Icon name="SparklesIcon" variant="solid" size={32} color={colors.accent} />
           <Text className="text-primary ml-3 text-xl font-bold">Family Tasks</Text>
         </View>
         <View className="bg-accent rounded-full bg-opacity-20 px-3 py-1">

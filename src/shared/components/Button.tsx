@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text } from 'react-native';
 import { Icon } from './Icon';
+import { colors } from '../utils/colors';
 import * as SolidIcons from 'react-native-heroicons/solid';
 
 type IconName = keyof typeof SolidIcons;
@@ -111,7 +112,7 @@ const Button: React.FC<ButtonProps> = ({
         <Icon
           name={icon}
           size={iconSizes[size]}
-          color={variant === 'outline' || variant === 'ghost' ? '#111111' : '#FFFFFF'}
+          color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
           variant="outline"
         />
       )}
@@ -120,7 +121,7 @@ const Button: React.FC<ButtonProps> = ({
         <Icon
           name="ArrowPathIcon"
           size={iconSizes[size]}
-          color={variant === 'outline' || variant === 'ghost' ? '#111111' : '#FFFFFF'}
+          color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
           variant="outline"
         />
       )}
@@ -139,7 +140,7 @@ const Button: React.FC<ButtonProps> = ({
         <Icon
           name={icon}
           size={iconSizes[size]}
-          color={variant === 'outline' || variant === 'ghost' ? '#111111' : '#FFFFFF'}
+          color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
           variant="outline"
         />
       )}

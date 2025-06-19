@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, FlatList } from 'react-native';
 import { Task } from '../../../modals/Task';
 import { Icon } from '../../../shared/components/Icon';
+import { colors } from '../../../shared/utils/colors';
 import TaskCard from '../../../shared/components/TaskCard';
 
 interface TaskListProps {
@@ -24,7 +25,7 @@ const TaskList: React.FC<TaskListProps> = ({
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Icon name="ArrowPathIcon" size={24} color="#9CA3AF" variant="outline" />
+        <Icon name="ArrowPathIcon" size={24} color={colors.muted} variant="outline" />
         <Text className="text-muted mt-2 font-light">Loading tasks...</Text>
       </View>
     );
@@ -33,7 +34,7 @@ const TaskList: React.FC<TaskListProps> = ({
   if (tasks.length === 0) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Icon name="CheckCircleIcon" size={48} color="#9CA3AF" variant="outline" />
+        <Icon name="CheckCircleIcon" size={48} color={colors.muted} variant="outline" />
         <Text className="text-primary mt-4 text-lg font-medium">No tasks yet</Text>
         <Text className="text-muted mt-1 font-light">Tap the + button to add your first task</Text>
       </View>

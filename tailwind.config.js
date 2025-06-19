@@ -25,6 +25,8 @@ module.exports = {
         muted: '#9CA3AF', // Muted Text
         border: '#E5E7EB', // Border
         accent: '#FFB020',
+        white: '#FFFFFF',
+        error: '#EF4444', // Error color
       },
     },
   },

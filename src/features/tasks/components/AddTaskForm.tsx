@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import Button from '../../../shared/components/Button';
+import { colors } from '../../../shared/utils/colors';
 
 interface AddTaskFormProps {
   newTaskTitle: string;
@@ -29,7 +30,7 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({
             multiline={false}
             returnKeyType="done"
             onSubmitEditing={onSubmit}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.muted}
             blurOnSubmit={true}
           />
         </View>

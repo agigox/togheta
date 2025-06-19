@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { colors } from '../../../shared/utils/colors';
 
 interface TabToggleProps {
   activeTab: 'login' | 'signup';
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -68,10 +69,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   activeTabText: {
-    color: '#111111',
+    color: colors.primary,
   },
   inactiveTabText: {
-    color: '#9CA3AF',
+    color: colors.muted,
   },
 });
 

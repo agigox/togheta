@@ -1,5 +1,6 @@
 import React from 'react';
 import { TextInput, View, Text, StyleSheet } from 'react-native';
+import { colors } from '../utils/colors';
 
 interface InputProps {
   label: string;
@@ -36,7 +37,7 @@ const Input: React.FC<InputProps> = ({
         autoCapitalize={autoCapitalize}
         autoComplete={autoComplete}
         style={[styles.input, error && styles.inputError]}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={colors.muted}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
@@ -48,25 +49,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: '#111111',
+    color: colors.primary,
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 8,
   },
   input: {
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     fontWeight: '400',
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#EF4444',
+    color: colors.error,
     fontSize: 12,
     fontWeight: '400',
     marginTop: 4,
