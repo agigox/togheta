@@ -5,11 +5,13 @@ import { useTasks } from '../../hooks/useTasks';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
+import { useAuth } from '~/hooks/useAuth';
 const TaskScreen = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [newlyAddedTaskId, setNewlyAddedTaskId] = useState<string | undefined>(undefined);
-
+  const { user } = useAuth();
+  console.log(user)
   // Keep track of timeout to clean it up if needed
   const [highlightTimeout, setHighlightTimeout] = useState<NodeJS.Timeout | null>(null);
 

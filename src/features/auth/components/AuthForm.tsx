@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { Button, Input } from '../../../shared/components';
-import { colors } from '../../../shared/utils/colors';
 import TabToggle from './TabToggle';
+import HeaderAuth from './AuthHeader';
+import { useAuth } from '~/hooks/useAuth';
+import SplashScreen from '~/shared/components/SplashScreen';
 
 const AuthForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -15,6 +17,8 @@ const AuthForm: React.FC = () => {
     password?: string;
     confirmPassword?: string;
   }>({});
+  const { loading, login, signup } = useAuth();
+
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -53,16 +57,27 @@ const AuthForm: React.FC = () => {
     try {
       // TODO: Implement authentication logic here
       // For now, just show a success message
-      const action = activeTab === 'login' ? 'logged in' : 'signed up';
-      Alert.alert('Success', `You have successfully ${action}!`);
-
+      // const action = activeTab === 'login' ? 'logged in' : 'signed up';
+      // Alert.alert('Success', `You have successfully ${action}!`);
+      if(activeTab === 'login') {
+        // Call login function from useAuth hook
+        await login(email, password);
+      } else {
+        // Call signup function from useAuth hook
+        await signup(email, password);
+      }
       // Reset form
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setErrors({});
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      // Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.log(error);
+      // if error login go to signup tab
+      if (activeTab === 'login') {
+        handleTabChange('signup');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,18 +94,14 @@ const AuthForm: React.FC = () => {
       console.error('Error during tab change:', error);
     }
   };
+  if (loading) {
+  return <SplashScreen />;
+}
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome to Togetha</Text>
-        <Text style={styles.subtitle}>
-          {activeTab === 'login'
-            ? 'Sign in to your account to continue'
-            : 'Create a new account to get started'}
-        </Text>
-      </View>
+      <HeaderAuth activeTab={activeTab} />
 
       {/* Tab Toggle */}
       <TabToggle activeTab={activeTab} onTabChange={handleTabChange} />
@@ -184,22 +195,6 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 24,
     paddingVertical: 32,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  title: {
-    color: colors.primary,
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: colors.muted,
-    fontSize: 18,
-    fontWeight: '400',
-    textAlign: 'center',
   },
   formContainer: {
     marginBottom: 24,
