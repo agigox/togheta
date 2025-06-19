@@ -3,27 +3,28 @@ import './global.css';
 import { TaskScreen } from './src/features/tasks';
 import {
   useFonts,
-  SpaceGrotesk_300Light,
-  SpaceGrotesk_400Regular,
-  SpaceGrotesk_500Medium,
-  SpaceGrotesk_600SemiBold,
-  SpaceGrotesk_700Bold,
-} from '@expo-google-fonts/space-grotesk';
+  Inter_300Light,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
+import { AuthScreen } from '~/features/auth';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    SpaceGrotesk_300Light,
-    SpaceGrotesk_400Regular,
-    SpaceGrotesk_500Medium,
-    SpaceGrotesk_600SemiBold,
-    SpaceGrotesk_700Bold,
+    Inter_300Light,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
   });
 
   if (!fontsLoaded) return <AppLoading />;
   return (
     <>
-      <TaskScreen />
+      {true ? <AuthScreen /> : <TaskScreen />}
       <StatusBar style="auto" />
     </>
   );

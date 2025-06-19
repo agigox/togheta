@@ -52,7 +52,7 @@ const Button: React.FC<ButtonProps> = ({
     switch (variant) {
       case 'primary':
         return {
-          container: 'bg-accent border-2 border-accent',
+          container: 'bg-primary border-2 border-primary',
           text: 'text-white font-semiBold',
           disabledContainer: 'bg-muted border-muted',
           disabledText: 'text-white',
@@ -104,7 +104,7 @@ const Button: React.FC<ButtonProps> = ({
         ${isDisabled ? styles.disabledContainer : styles.container}
         ${isDisabled ? 'opacity-50' : ''}
         flex-row
-        items-center justify-center rounded-lg
+        items-center justify-center
         active:opacity-80
       `}>
       {icon && iconPosition === 'left' && !loading && (
