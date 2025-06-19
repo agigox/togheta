@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Alert } from 'react-native';
+import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { Button, Input } from '../../../shared/components';
 import TabToggle from './TabToggle';
 
@@ -68,17 +68,23 @@ const AuthForm: React.FC = () => {
   };
 
   const handleTabChange = (tab: 'login' | 'signup') => {
-    setActiveTab(tab);
-    setErrors({}); // Clear errors when switching tabs
-    setConfirmPassword(''); // Clear confirm password when switching to login
+    console.log('Tab changing from', activeTab, 'to', tab);
+    try {
+      setActiveTab(tab);
+      setErrors({}); // Clear errors when switching tabs
+      setConfirmPassword(''); // Clear confirm password when switching to login
+      console.log('Tab change completed successfully');
+    } catch (error) {
+      console.error('Error during tab change:', error);
+    }
   };
 
   return (
-    <View className="px-6 py-8">
+    <View style={styles.container}>
       {/* Header */}
-      <View className="mb-8">
-        <Text className="text-primary mb-2 text-center text-xl font-bold">Welcome to Togetha</Text>
-        <Text className="text-muted font-regular text-center text-base">
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome to Togetha</Text>
+        <Text style={styles.subtitle}>
           {activeTab === 'login'
             ? 'Sign in to your account to continue'
             : 'Create a new account to get started'}
@@ -89,7 +95,7 @@ const AuthForm: React.FC = () => {
       <TabToggle activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Form */}
-      <View className="mb-6">
+      <View style={styles.formContainer}>
         <Input
           label="Email"
           value={email}
@@ -175,5 +181,31 @@ const AuthForm: React.FC = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+  header: {
+    marginBottom: 32,
+  },
+  title: {
+    color: '#111111',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+  formContainer: {
+    marginBottom: 24,
+  },
+});
 
 export default AuthForm;
