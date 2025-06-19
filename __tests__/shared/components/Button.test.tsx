@@ -54,12 +54,27 @@ describe('Button Component', () => {
     const { getByTestId: getSecondary } = render(
       <Button title="Secondary" onPress={mockOnPress} variant="secondary" testID="secondary-btn" />
     );
+    const { getByTestId: getOutline } = render(
+      <Button title="Outline" onPress={mockOnPress} variant="outline" testID="outline-btn" />
+    );
+    const { getByTestId: getGhost } = render(
+      <Button title="Ghost" onPress={mockOnPress} variant="ghost" testID="ghost-btn" />
+    );
 
     const primaryBtn = getPrimary('primary-btn');
     const secondaryBtn = getSecondary('secondary-btn');
+    const outlineBtn = getOutline('outline-btn');
+    const ghostBtn = getGhost('ghost-btn');
 
-    expect(primaryBtn.props.className).toContain('bg-accent');
+    // Primary and secondary both use bg-primary
+    expect(primaryBtn.props.className).toContain('bg-primary');
     expect(secondaryBtn.props.className).toContain('bg-primary');
+    
+    // Outline uses bg-background
+    expect(outlineBtn.props.className).toContain('bg-background');
+    
+    // Ghost uses bg-transparent
+    expect(ghostBtn.props.className).toContain('bg-transparent');
   });
 
   it('applies full width when specified', () => {

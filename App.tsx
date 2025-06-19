@@ -11,6 +11,7 @@ import {
 } from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
 import { AuthScreen } from '~/features/auth';
+import { useAuth } from '~/hooks/useAuth';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -22,6 +23,7 @@ export default function App() {
   });
 
   if (!fontsLoaded) return <AppLoading />;
+  // const { user, loading } = useAuth();
   return (
     <>
       {true ? <AuthScreen /> : <TaskScreen />}

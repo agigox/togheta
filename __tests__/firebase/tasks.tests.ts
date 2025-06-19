@@ -3,14 +3,19 @@ import { addTask, getTasksForFamily, toggleTask } from '../../src/firebase/tasks
 import { getDB } from '../../src/firebase';
 import { Task } from '../../src/modals/Task';
 
+
 // Mock Firestore methods
 const mockAddDoc = jest.fn();
 const mockUpdateDoc = jest.fn();
+const mockOnSnapshot = jest.fn();
+
+
 
 jest.mock('../../src/firebase', () => ({
   getDB: jest.fn(),
+  auth: { mockAuth: true },
 }));
-const mockOnSnapshot = jest.fn();
+
 jest.mock('firebase/firestore', () => ({
   addDoc: (...args: any[]) => mockAddDoc(...args),
   updateDoc: (...args: any[]) => mockUpdateDoc(...args),
@@ -20,6 +25,8 @@ jest.mock('firebase/firestore', () => ({
   orderBy: jest.fn(),
   onSnapshot: (...args: any[]) => mockOnSnapshot(...args),
 }));
+
+
 
 describe('Firebase Task Logic', () => {
   beforeEach(() => {
@@ -91,3 +98,5 @@ describe('Firebase Task Logic', () => {
 });
 
 });
+
+
