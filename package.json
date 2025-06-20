@@ -40,7 +40,11 @@
     "react-native-heroicons": "^4.0.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
-    "react-native-svg": "^15.12.0"
+    "react-native-svg": "^15.12.0",
+    "expo-router": "~5.1.0",
+    "react-native-screens": "~4.11.1",
+    "expo-linking": "~7.1.5",
+    "expo-constants": "~17.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -63,6 +67,6 @@
     "ts-jest": "^29.4.0",
     "typescript": "~5.8.3"
   },
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "expo-router/entry",
   "private": true
 }

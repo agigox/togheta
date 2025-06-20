@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { Text, Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '~/context/AuthContext';
@@ -7,6 +7,7 @@ import { LogoutButton } from '~/shared';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
+import { Link } from 'expo-router';
 const TaskScreen = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +101,9 @@ const TaskScreen = () => {
             </View>
             <View className="ml-4">
               <LogoutButton />
+              <Link href="/family">
+                <Text>Go to Family</Text>
+              </Link>
             </View>
           </View>
         </View>
