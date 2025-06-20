@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert } from 'react-native';
-import { Button } from '~/shared/components';
+import { Button } from '~/shared';
 import { useAuth } from '~/context/AuthContext';
 
 const LogoutButton: React.FC = () => {

@@ -3,7 +3,7 @@ import { Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '~/context/AuthContext';
-import { LogoutButton } from '~/shared/components';
+import { LogoutButton } from '~/shared';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';

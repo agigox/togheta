@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
-import { Button, Input } from '../../../shared/components';
+import { Button, Input } from '~/shared';
 import TabToggle from './TabToggle';
 import HeaderAuth from './AuthHeader';
 import SplashScreen from '~/shared/components/SplashScreen';
