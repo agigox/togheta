@@ -54,29 +54,67 @@ const AuthForm: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // TODO: Implement authentication logic here
-      // For now, just show a success message
-      // const action = activeTab === 'login' ? 'logged in' : 'signed up';
-      // Alert.alert('Success', `You have successfully ${action}!`);
       if (activeTab === 'login') {
-        // Call login function from useAuth hook
         await login(email, password);
+        // Auth state and persistence are handled automatically by AuthContext
+        console.log('Login successful - user data persisted');
       } else {
-        // Call signup function from useAuth hook
         await signup(email, password);
+        // Auth state and persistence are handled automatically by AuthContext
+        console.log('Signup successful - user data persisted');
       }
-      // Reset form
+
+      // Reset form on success
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setErrors({});
-    } catch (error) {
-      // Alert.alert('Error', 'Something went wrong. Please try again.');
-      console.log(error);
-      // if error login go to signup tab
-      if (activeTab === 'login') {
-        handleTabChange('signup');
+    } catch (error: any) {
+      console.error('Authentication error:', error);
+
+      // Handle specific Firebase auth errors
+      let errorMessage = 'Something went wrong. Please try again.';
+
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'No account found with this email.';
+            if (activeTab === 'login') {
+              Alert.alert('Account Not Found', 'Would you like to create a new account?', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Sign Up', onPress: () => handleTabChange('signup') },
+              ]);
+              return;
+            }
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Incorrect password. Please try again.';
+            break;
+          case 'auth/email-already-in-use':
+            errorMessage = 'An account with this email already exists.';
+            if (activeTab === 'signup') {
+              Alert.alert('Account Exists', 'Would you like to sign in instead?', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Sign In', onPress: () => handleTabChange('login') },
+              ]);
+              return;
+            }
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password should be at least 6 characters long.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your connection.';
+            break;
+          default:
+            errorMessage = error.message || errorMessage;
+        }
       }
+
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

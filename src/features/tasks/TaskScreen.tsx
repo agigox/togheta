@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTasks } from '../../hooks/useTasks';
+import { useAuth } from '~/context/AuthContext';
+import { LogoutButton } from '~/shared/components';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
@@ -12,8 +14,11 @@ const TaskScreen = () => {
   // Keep track of timeout to clean it up if needed
   const [highlightTimeout, setHighlightTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Mock family ID for now - you'll get this from your auth context later
-  const familyId = 'family123';
+  // Get authenticated user
+  const { user } = useAuth();
+
+  // Use the user's ID as the family ID for now - this can be enhanced later to support actual family groups
+  const familyId = user?.uid || 'anonymous';
 
   // Use the custom hook
   const { tasks, loading: isLoadingTasks, error, addTask, toggleTask } = useTasks(familyId);
@@ -87,8 +92,17 @@ const TaskScreen = () => {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
-        {/* Fixed Header */}
-        <TaskHeader taskCount={tasks.length} />
+        {/* Fixed Header with Logout Button */}
+        <View className="px-4 pt-2">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <TaskHeader taskCount={tasks.length} />
+            </View>
+            <View className="ml-4">
+              <LogoutButton />
+            </View>
+          </View>
+        </View>
 
         {/* Tasks List */}
         <View className="flex-1 px-4 pt-4">
