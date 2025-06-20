@@ -11,10 +11,10 @@ import {
 } from '@expo-google-fonts/inter';
 import AppLoading from 'expo-app-loading';
 import { AuthScreen } from '~/features/auth';
-import { useAuth } from '~/hooks/useAuth';
+import { AuthProvider, useAuth } from '~/context/AuthContext';
+import Features from '~/features';
 
 export default function App() {
-  const { user, loading } = useAuth();
   const [fontsLoaded] = useFonts({
     Inter_300Light,
     Inter_400Regular,
@@ -23,12 +23,11 @@ export default function App() {
     Inter_700Bold,
   });
 
-  if (!fontsLoaded || loading) return <AppLoading />;
+  if (!fontsLoaded) return <AppLoading />;
 
   return (
-    <>
-      {user ? <TaskScreen /> : <AuthScreen />}
-      <StatusBar style="auto" />
-    </>
+    <AuthProvider>
+      <Features />
+    </AuthProvider>
   );
 }

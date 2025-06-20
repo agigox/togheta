@@ -3,8 +3,8 @@ import { View, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { Button, Input } from '../../../shared/components';
 import TabToggle from './TabToggle';
 import HeaderAuth from './AuthHeader';
-import { useAuth } from '~/hooks/useAuth';
 import SplashScreen from '~/shared/components/SplashScreen';
+import { useAuth } from '~/context/AuthContext';
 
 const AuthForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -18,7 +18,6 @@ const AuthForm: React.FC = () => {
     confirmPassword?: string;
   }>({});
   const { loading, login, signup } = useAuth();
-
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -59,7 +58,7 @@ const AuthForm: React.FC = () => {
       // For now, just show a success message
       // const action = activeTab === 'login' ? 'logged in' : 'signed up';
       // Alert.alert('Success', `You have successfully ${action}!`);
-      if(activeTab === 'login') {
+      if (activeTab === 'login') {
         // Call login function from useAuth hook
         await login(email, password);
       } else {
@@ -95,8 +94,8 @@ const AuthForm: React.FC = () => {
     }
   };
   if (loading) {
-  return <SplashScreen />;
-}
+    return <SplashScreen />;
+  }
 
   return (
     <View style={styles.container}>
