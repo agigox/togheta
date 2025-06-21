@@ -1,17 +1,18 @@
-import React from 'react'
-import { View, Text } from 'react-native';
-import FamilyForm from './components/FamilyForm';
+import { View } from 'react-native';
+import InviteBlock from './components/InviteBlock';
+import Header from './components/Header';
+import FamilyList from './components/FamilyList';
+
 
 const FamilyScreen = () => {
   return (
-   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Family Screen</Text>
-        <Text style={{ marginTop: 16, textAlign: 'center' }}>
-          This is a protected route.{'\n'}
-          Only authenticated users can see this.
-          <FamilyForm />
-        </Text>
-      </View>
+   <View className="flex-1 bg-white px-6 pt-10">
+      <Header />
+
+      <FamilyList />
+
+      <InviteBlock />
+    </View>
   )
 }
 
