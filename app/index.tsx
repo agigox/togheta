@@ -8,7 +8,6 @@ export default function Index() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { hasFamilyId, loading: familyLoading } = useUserFamily();
   const router = useRouter();
-  console.log('first, /onboarding', !authLoading && !familyLoading);
 
   useEffect(() => {
     console.log('🔄 Routing logic check:', {
