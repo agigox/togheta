@@ -257,59 +257,326 @@ In **production builds**:
    - **Expected**: No infinite loading loops
 ---
 
-## 🎯 **Test Scenario 6: Task Management Between Family Members**
+## 🎯 **Test Scenario 6: Comprehensive Task Creation & Management**
 
-### **Objective**: Test real-time task synchronization with Zustand stores
+### **Objective**: Test complete task lifecycle with Zustand stores
 
-### **Prerequisites**: Complete Scenarios 1 & 2 (have 2 users in same family)
+### **Prerequisites**: Complete Scenario 1 (user with family created)
 
-### **Steps**:
-1. **User 1 adds a task**
-   - Login as first user
-   - Add task: "Buy groceries"
+### **6A: Basic Task Creation**
+
+#### **Steps**:
+1. **Navigate to Tasks Screen**
+   - Should see family name in header
+   - Should see "Add Task" button or input field
+   - Should see empty task list or welcome message
+
+2. **Create First Task**
+   - Enter task title: "Buy groceries"
+   - Click "Add Task" or press Enter
    - **Expected Console Logs**:
      ```
      📋 Subscribing to tasks for family: [familyId]
      Adding task to family [familyId]: Buy groceries
      ✅ Task added successfully: [taskId]
-     ```
-   - Task should appear in list
-
-2. **User 2 sees the task**
-   - Login as second user (different device/browser)
-   - Should see the same task in real-time
-   - **Expected Console Logs**:
-     ```
      📋 Tasks snapshot updated: 1 tasks
      ```
+   - Task should appear immediately in the list
+   - Input field should clear after creation
 
-3. **User 2 completes the task**
-   - Mark "Buy groceries" as complete
-   - Should update in real-time with Zustand store
+3. **Verify Task Properties**
+   - Task should show: title, unchecked state, creator info
+   - Should be able to see task in Firebase Console under `/families/[familyId]/tasks/`
 
-4. **User 1 sees the update**
-   - Task should show as completed for User 1
-   - Should update automatically via Firestore subscription
+#### **Firebase Verification**:
+- **Check `/families/[familyId]/tasks/[taskId]`**: Should contain:
+  ```json
+  {
+    "title": "Buy groceries",
+    "completed": false,
+    "createdBy": "[userId]",
+    "createdAt": "[timestamp]",
+    "assignedTo": null
+  }
+  ```
+
+### **6B: Multiple Task Creation**
+
+#### **Steps**:
+1. **Add Multiple Tasks Quickly**
+   - Add task: "Clean kitchen"
+   - Add task: "Walk the dog"
+   - Add task: "Pay bills"
+   - **Expected Console Logs**:
+     ```
+     Adding task to family [familyId]: Clean kitchen
+     ✅ Task added successfully: [taskId2]
+     Adding task to family [familyId]: Walk the dog
+     ✅ Task added successfully: [taskId3]
+     Adding task to family [familyId]: Pay bills
+     ✅ Task added successfully: [taskId4]
+     📋 Tasks snapshot updated: 4 tasks
+     ```
+
+2. **Verify Task Order**
+   - Tasks should appear in creation order (newest first or oldest first)
+   - All tasks should be visible and interactive
+
+3. **Test Empty Task Prevention**
+   - Try to add empty task (just spaces or empty string)
+   - Should not create task or show validation error
+   - Input should not clear if validation fails
+
+### **6C: Task State Management**
+
+#### **Steps**:
+1. **Complete a Task**
+   - Click checkbox next to "Buy groceries"
+   - **Expected Console Logs**:
+     ```
+     Updating task [taskId]: completed = true
+     ✅ Task updated successfully
+     📋 Tasks snapshot updated: 4 tasks
+     ```
+   - Task should show as completed (strikethrough, different color, etc.)
+
+2. **Uncomplete a Task**
+   - Click checkbox again to uncomplete "Buy groceries"
+   - Task should return to uncompleted state
+   - Should update in real-time
+
+3. **Test Multiple Completions**
+   - Complete "Clean kitchen" and "Walk the dog"
+   - Should see completed/uncompleted tasks properly organized
+   - Completed count should update if displayed
+
+### **6D: Task Validation & Error Handling**
+
+#### **Steps**:
+1. **Test Long Task Titles**
+   - Add very long task: "This is a very long task title that might exceed normal length limits and should be handled properly by the application"
+   - Should either accept with proper display or show character limit
+
+2. **Test Special Characters**
+   - Add task with emojis: "🛒 Shopping 🥕🥛"
+   - Add task with special chars: "Fix bug #123 & update docs"
+   - Should handle and display correctly
+
+3. **Test Network Error Handling**
+   - Turn on airplane mode
+   - Try to add task: "Offline task"
+   - Should show appropriate error message
+   - Turn off airplane mode - task should sync when connection returns
+
+4. **Test Concurrent Modifications**
+   - With two browser tabs open to same family
+   - Add task in tab 1, immediately add task in tab 2
+   - Both tasks should appear in both tabs
+   - No conflicts or lost tasks
+
+### **6E: Task Assignment (if implemented)**
+
+#### **Steps**:
+1. **Assign Task to Family Member**
+   - If assignment feature exists, test assigning tasks
+   - Should update assignedTo field
+   - Should show assigned member in UI
+
+2. **Unassign Task**
+   - Remove assignment from task
+   - Should revert to unassigned state
+
+### **6F: Task Deletion (if implemented)**
+
+#### **Steps**:
+1. **Delete Task**
+   - If delete feature exists, delete "Pay bills" task
+   - **Expected Console Logs**:
+     ```
+     Deleting task [taskId]: Pay bills
+     ✅ Task deleted successfully
+     📋 Tasks snapshot updated: 3 tasks
+     ```
+   - Task should disappear from list
+   - Should be removed from Firebase
+
+2. **Confirm Deletion**
+   - Should show confirmation dialog before deletion
+   - Should handle "Cancel" properly
 
 ---
 
-## 🎯 **Test Scenario 7: Error Handling with Zustand**
+## 🎯 **Test Scenario 7: Real-Time Task Synchronization**
 
-### **Objective**: Test error scenarios and Zustand error states
+### **Objective**: Test multi-user task collaboration with Zustand stores
+
+### **Prerequisites**: Complete Scenarios 1 & 2 (have 2 users in same family)
 
 ### **Steps**:
 
-#### **7A: Network Issues**
-1. **Disconnect internet during signup**
-   - Should show appropriate error message in Zustand store
-   - Should not create partial data
-   - Error should be stored in auth store state
+1. **Setup Two Sessions**
+   - User 1: Login on device/browser 1
+   - User 2: Login on device/browser 2
+   - Both should be in same family, both on tasks screen
 
-#### **7B: Family Creation Errors**
-1. **Test family creation with network issues**
-   - Should set error in family store
-   - Should reset `familyLoading` to false
-   - Should show user-friendly error message
+2. **User 1 Creates Task**
+   - User 1 adds: "Team task - grocery shopping"
+   - **Expected on User 1**:
+     ```
+     Adding task to family [familyId]: Team task - grocery shopping
+     ✅ Task added successfully: [taskId]
+     ```
+   - **Expected on User 2**:
+     ```
+     📋 Tasks snapshot updated: [X] tasks
+     ```
+   - User 2 should see the new task appear immediately
+
+3. **User 2 Completes Task**
+   - User 2 marks "Team task - grocery shopping" as complete
+   - **Expected on User 2**:
+     ```
+     Updating task [taskId]: completed = true
+     ✅ Task updated successfully
+     ```
+   - **Expected on User 1**:
+     ```
+     📋 Tasks snapshot updated: [X] tasks
+     ```
+   - User 1 should see task marked as completed immediately
+
+4. **Rapid Interactions**
+   - User 1 adds multiple tasks quickly
+   - User 2 completes tasks as they appear
+   - Both users should see all changes in real-time
+   - No race conditions or lost updates
+
+5. **Connection Interruption**
+   - User 1 goes offline (airplane mode)
+   - User 2 adds task: "Offline test task"
+   - User 1 comes back online
+   - User 1 should see "Offline test task" appear
+
+### **Firebase Verification for Real-Time Tests**:
+- All task changes should be reflected in Firebase Console immediately
+- Task counts should match between users and Firebase
+- No duplicate or orphaned tasks
+- Proper timestamp ordering
+
+---
+
+## 🎯 **Test Scenario 8: Task Performance & Edge Cases**
+
+### **Objective**: Test task system performance and edge cases
+
+### **8A: Large Task Lists**
+
+#### **Steps**:
+1. **Create Many Tasks**
+   - Add 20+ tasks with different titles
+   - Should remain responsive during creation
+   - Should handle scrolling smoothly
+   - **Expected Console Logs**:
+     ```
+     📋 Tasks snapshot updated: 20 tasks
+     ```
+
+2. **Test Task List Performance**
+   - Scroll through large task list
+   - Mark multiple tasks complete/incomplete rapidly
+   - Should remain responsive
+   - Should not cause UI freezing
+
+### **8B: Stress Testing**
+
+#### **Steps**:
+1. **Rapid Task Creation**
+   - Add 10 tasks as quickly as possible
+   - All tasks should be created successfully
+   - Should handle queue properly without loss
+
+2. **Concurrent User Stress Test**
+   - Multiple users (3+) all adding tasks simultaneously
+   - Should handle all operations without conflicts
+   - Real-time sync should work for all users
+
+### **8C: Edge Case Inputs**
+
+#### **Steps**:
+1. **Boundary Testing**
+   - Empty task (should be prevented)
+   - Very long task (1000+ characters)
+   - Tasks with only whitespace
+   - Tasks with special Unicode characters: "Task με ελληνικά 中文 🚀"
+
+2. **SQL Injection Prevention**
+   - Task with SQL-like content: "'; DROP TABLE tasks; --"
+   - Should be safely stored as plain text
+   - Should not cause any security issues
+
+### **8D: Memory & Resource Management**
+
+#### **Steps**:
+1. **Memory Leak Testing**
+   - Create and complete many tasks
+   - Navigate away and back to tasks screen
+   - Should not accumulate memory over time
+   - Zustand subscriptions should clean up properly
+
+2. **Subscription Management**
+   - Logout and login multiple times
+   - Should not create duplicate subscriptions
+   - **Expected Console Logs**:
+     ```
+     📋 Cleaning up previous task subscription
+     📋 Subscribing to tasks for family: [familyId]
+     ```
+
+---
+
+## 🎯 **Test Scenario 9: Error Handling with Zustand**
+
+### **Objective**: Test error scenarios and Zustand error states
+
+### **9A: Network Issues**
+
+#### **Steps**:
+1. **Task Creation with Network Issues**
+   - Turn on airplane mode
+   - Try to add task: "Offline task"
+   - Should show appropriate error message
+   - Should store error in tasks store state
+   - Turn off airplane mode - should retry and succeed
+
+2. **Task Update with Network Issues**
+   - Mark task as complete while offline
+   - Should queue operation or show error
+   - Should sync when connection returns
+
+### **9B: Firebase Permission Errors**
+
+#### **Steps**:
+1. **Simulate Permission Denied**
+   - If possible, test with restricted Firebase rules
+   - Should handle gracefully with error messages
+   - Should not crash the app
+
+2. **Invalid Data Scenarios**
+   - Test with corrupted task data in Firebase
+   - Should handle gracefully without breaking UI
+
+### **9C: Store Error Recovery**
+
+#### **Steps**:
+1. **Store Error States**
+   - Force error in tasks store (if possible)
+   - Should display error UI
+   - Should provide retry mechanism
+   - Should recover gracefully
+
+2. **Error Persistence**
+   - Errors should be cleared when operations succeed
+   - Should not show stale error messages
 
 #### **7C: Parameter Order Bug Prevention**
 1. **Test family creation with proper parameters**
@@ -359,13 +626,16 @@ In **production builds**:
 
 ## 📋 **Expected Results Summary**
 
-| Scenario | Expected Route | Zustand Store State | Notes |
-|----------|---------------|-------------------|--------|
-| New Signup | `/auth` → `/onboarding` | Auth: authenticated, Family: no familyId | Zustand manages loading states |
-| Create Family | `/onboarding` → `/tasks` | Family: has familyId, loading: false | **Immediate redirect** - no waiting |
-| Join Family | `/onboarding` → `/tasks` | Family: joined existing family | Parameter order fixed |
-| Existing Login | `/auth` → `/tasks` | Auth: restored from SecureStore | Zustand persistence working |
-| No Family Login | `/auth` → `/onboarding` | Family: reset state | Proper state management |
+| Scenario | Expected Route | Zustand Store State | Task Tests | Notes |
+|----------|---------------|-------------------|------------|--------|
+| New Signup | `/auth` → `/onboarding` | Auth: authenticated, Family: no familyId | N/A | Zustand manages loading states |
+| Create Family | `/onboarding` → `/tasks` | Family: has familyId, loading: false | Task creation ready | **Immediate redirect** - no waiting |
+| Join Family | `/onboarding` → `/tasks` | Family: joined existing family | Task sync working | Parameter order fixed |
+| Existing Login | `/auth` → `/tasks` | Auth: restored from SecureStore | Tasks load properly | Zustand persistence working |
+| Task Creation | `/tasks` | Tasks: array of tasks, loading: false | ✅ CRUD operations | Real-time sync with Firebase |
+| Multi-user Tasks | `/tasks` | Tasks: synced across users | ✅ Real-time updates | Concurrent user support |
+| Task Performance | `/tasks` | Tasks: handles 20+ tasks | ✅ Performance tests | No memory leaks |
+| Error Handling | Any route | All stores: proper error states | ✅ Graceful failures | User-friendly messages |
 
 ---
 
@@ -378,6 +648,13 @@ If any scenario fails, check:
 - [ ] Store reset operations logged: `🔄 Resetting family store state`
 - [ ] Family operations logged with store context
 - [ ] Auth state changes reflected in stores
+- [ ] Task operations logged: `📋 Subscribing to tasks for family`
+
+### **Task-Specific Logs**
+- [ ] Task creation logged: `Adding task to family [familyId]`
+- [ ] Task updates logged: `Updating task [taskId]`
+- [ ] Task sync logged: `📋 Tasks snapshot updated: X tasks`
+- [ ] Task subscriptions properly cleaned up
 
 ### **Loading State Management**
 - [ ] `authLoading` managed correctly
@@ -440,18 +717,44 @@ If any scenario fails, check:
 
 ---
 
-## 🎯 **Success Criteria (Updated for Zustand)**
+## 🎯 **Success Criteria (Updated for Zustand + Task Management)**
 
+### **Core Functionality**
 ✅ **All Zustand stores initialize correctly**  
 ✅ **Loading states managed properly (no infinite loops)**  
 ✅ **Family creation works without parameter errors**  
 ✅ **Tasks page loads immediately after family creation**  
 ✅ **Store state persists across app restarts**  
-✅ **Real-time updates work with Zustand integration**  
-✅ **Error handling works in all stores**  
-✅ **Store cleanup works on logout**
 
-Run through all scenarios systematically to ensure the Zustand migration is working correctly end-to-end!
+### **Task Management**
+✅ **Task creation works reliably**  
+✅ **Task completion/incompletion toggles properly**  
+✅ **Real-time task sync between multiple users**  
+✅ **Task list handles 20+ tasks without performance issues**  
+✅ **Task validation prevents empty/invalid tasks**  
+✅ **Task operations work offline and sync when online**  
+
+### **Store Integration**
+✅ **Real-time updates work with Zustand integration**  
+✅ **Error handling works in all stores (auth, family, tasks)**  
+✅ **Store cleanup works on logout**  
+✅ **Task subscriptions properly managed**  
+✅ **No memory leaks from task operations**  
+
+### **Multi-User Collaboration**
+✅ **Multiple users can work on tasks simultaneously**  
+✅ **Task changes appear in real-time for all family members**  
+✅ **No race conditions during concurrent task operations**  
+✅ **Proper conflict resolution for simultaneous edits**  
+
+### **Performance & Reliability**
+✅ **Task operations remain responsive under load**  
+✅ **Large task lists (20+ items) perform well**  
+✅ **Network interruptions handled gracefully**  
+✅ **Error states recover properly**  
+✅ **UI remains stable during rapid task operations**  
+
+Run through all scenarios systematically to ensure the Zustand migration and task management are working correctly end-to-end!
 
 ## 🔄 **Migration Verification Checklist**
 
