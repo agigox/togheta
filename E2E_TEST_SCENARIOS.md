@@ -14,6 +14,20 @@ This document provides comprehensive test scenarios to validate the entire onboa
 4. **Console Logs**: Keep developer console open to monitor logs
 5. **Zustand Stores**: App now uses Zustand for state management instead of Context/hooks
 
+### **⚠️ Development vs Production Behavior**
+
+In **development mode** (Expo Dev Client, Metro bundler):
+- You may see duplicate initialization logs due to hot reloading
+- Multiple "Loading persisted auth state..." messages are normal
+- React components may re-mount during development
+
+In **production builds**:
+- Initialization should happen only once
+- Console logs will be cleaner and more predictable
+- No hot reloading artifacts
+
+**Expected logs shown in this document are for production-like behavior**. During development, you may see additional logs.
+
 ---
 
 ## 🎯 **Test Scenario 1: New User Signup → Create Family**
@@ -22,15 +36,23 @@ This document provides comprehensive test scenarios to validate the entire onboa
 
 ### **Steps**:
 1. **Open the app** (should show loading screen, then redirect to `/auth`)
-   - **Expected Console Logs**:
+   - **Expected Console Logs** (first time):
      ```
      🚀 Initializing Zustand stores...
      Loading persisted auth state...
      ✅ Stores initialized
      No persisted auth state found
      🔥 Firebase auth state changed: not authenticated
+     🔄 Resetting family state - user not authenticated
      🔄 Resetting family store state
      ✅ Family store state reset complete
+     🔄 Routing logic check: { authLoading: false, familyLoading: false, hasFamilyId: false, hasUser: false, isAuthenticated: false }
+     ➡️ Redirecting to /auth - user not authenticated
+     ```
+   - **Note**: In development, you may see additional logs due to hot reloading:
+     ```
+     🔄 Stores already initialized, skipping...
+     🔄 Auth already initialized, skipping...
      ```
 
 2. **Sign up with new email** (e.g., `testuser1@example.com`)
@@ -371,6 +393,16 @@ If any scenario fails, check:
 
 ## 🚨 **Common Issues & Solutions (Updated)**
 
+### **Issue: Multiple initialization logs**
+- **Cause**: Development hot reloading causes app remounts
+- **Expected**: May see "🔄 Stores already initialized, skipping..." 
+- **Solution**: Normal in development, won't happen in production
+
+### **Issue: Repeated "Loading persisted auth state..."**
+- **Cause**: Firebase auth listener triggering multiple times during development
+- **Expected**: Multiple calls during hot reload cycles
+- **Solution**: Normal behavior, auth state will stabilize
+
 ### **Issue: User stays on loading screen**
 - **Check**: Zustand auth store loading state
 - **Check**: Family store loading state
@@ -393,6 +425,11 @@ If any scenario fails, check:
 - **Check**: Subscription setup in family store
 - **Check**: Cleanup on user logout
 - **Solution**: Verify useEffect dependencies in index route
+
+### **Issue: Console logs don't match E2E scenarios**
+- **Check**: Development vs production environment
+- **Expected**: More logs in development due to hot reloading
+- **Solution**: Compare behavior patterns, not exact log counts
 
 ---
 

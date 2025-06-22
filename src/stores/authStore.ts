@@ -17,6 +17,9 @@ import {
 } from '~/shared/utils/authStorage';
 import { syncUserToFirestore } from '~/firebase/families';
 
+// Flag to prevent multiple auth initializations
+let authInitialized = false;
+
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -142,6 +145,11 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initializeAuth: () => {
+        if (authInitialized) {
+          console.log('🔄 Auth already initialized, skipping...');
+          return;
+        }
+        
         const { loadPersistedAuthState, persistAuthState } = get();
         
         // Load any persisted auth state first
@@ -194,6 +202,7 @@ export const useAuthStore = create<AuthState>()(
           return unsubscribe;
         };
 
+        authInitialized = true;
         initializeAuthFlow();
       },
 
