@@ -7,7 +7,9 @@ import {
   updateDoc,
   deleteDoc,
   Timestamp,
-  getDocs
+  getDocs,
+  query,
+  where
 } from 'firebase/firestore';
 import { getDB } from '~/firebase';
 import { Family } from '~/modals/Family';
@@ -44,6 +46,9 @@ export async function createFamily(creatorUid: string, familyName?: string): Pro
     
     // Add creator as admin member
     await addMemberToFamily(familyId, creatorUid, 'admin');
+    
+    // Update user's familyId
+    await updateUserFamilyId(creatorUid, familyId);
     
     return familyId;
   } catch (error) {
@@ -95,7 +100,7 @@ export async function syncUserToFirestore(user: {
   uid: string;
   email: string;
   displayName?: string;
-}, familyId?: string): Promise<void> {
+}): Promise<void> {
   try {
     console.log('Syncing user to Firestore:', user.email);
     const userRef = doc(db, 'users', user.uid);
@@ -109,7 +114,7 @@ export async function syncUserToFirestore(user: {
       displayName: user.displayName || user.email?.split('@')[0] || 'User',
       email: user.email,
       // Preserve existing familyId if no new one is provided
-      familyId: familyId !== undefined ? familyId : (existingData?.familyId || null),
+      familyId: existingData?.familyId || null,
       role: existingData?.role || 'member',
       joinedAt: existingData?.joinedAt || Timestamp.now(),
     };
@@ -252,6 +257,51 @@ export async function updateFamily(familyId: string, updates: Partial<Family>): 
     await updateDoc(familyRef, updates);
   } catch (error) {
     console.error('Error updating family:', error);
+    throw error;
+  }
+}
+
+/**
+ * Join a family using an invite code
+ */
+export async function joinFamilyWithCode(uid: string, inviteCode: string): Promise<string> {
+  try {
+    console.log('Looking for family with invite code:', inviteCode);
+    
+    // Find family with matching invite code
+    const familiesRef = collection(db, 'families');
+    const q = query(familiesRef, where('inviteCode', '==', inviteCode));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      throw new Error('Invalid invite code. Please check and try again.');
+    }
+    
+    // Get the family document
+    const familyDoc = querySnapshot.docs[0];
+    const familyId = familyDoc.id;
+    const familyData = familyDoc.data();
+    
+    console.log('Found family:', familyData.name, 'with ID:', familyId);
+    
+    // Check if user is already a member
+    const memberRef = doc(db, 'families', familyId, 'members', uid);
+    const memberSnap = await getDoc(memberRef);
+    
+    if (memberSnap.exists()) {
+      throw new Error('You are already a member of this family.');
+    }
+    
+    // Add user as member to family
+    await addMemberToFamily(familyId, uid, 'member');
+    
+    // Update user's familyId
+    await updateUserFamilyId(uid, familyId);
+    
+    console.log('Successfully joined family:', familyId);
+    return familyId;
+  } catch (error) {
+    console.error('Error joining family with code:', error);
     throw error;
   }
 }
