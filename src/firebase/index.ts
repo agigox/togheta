@@ -26,3 +26,6 @@ export function getDB() {
 // export const db = getFirestore(app);
 export const auth = getAuth(app);
 // const analytics = getAnalytics(app);
+
+// Re-export family functions for easier imports
+// export * from './families';

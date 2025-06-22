@@ -3,6 +3,7 @@ import { Text, Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '~/context/AuthContext';
+import { useFamily } from '~/hooks/useFamily';
 import { LogoutButton } from '~/shared';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
@@ -15,11 +16,12 @@ const TaskScreen = () => {
   // Keep track of timeout to clean it up if needed
   const [highlightTimeout, setHighlightTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Get authenticated user
+  // Get authenticated user and family
   const { user } = useAuth();
+  const { family, loading: familyLoading, error: familyError } = useFamily();
 
-  // Use the user's ID as the family ID for now - this can be enhanced later to support actual family groups
-  const familyId = user?.uid || 'anonymous';
+  // Wait for family to be loaded before using familyId to prevent permission errors
+  const familyId = family?.id || (familyLoading ? '' : user?.uid || 'anonymous');
 
   // Use the custom hook
   const { tasks, loading: isLoadingTasks, error, addTask, toggleTask } = useTasks(familyId);
@@ -29,7 +31,10 @@ const TaskScreen = () => {
     if (error) {
       Alert.alert('Database Error', error);
     }
-  }, [error]);
+    if (familyError) {
+      Alert.alert('Family Error', familyError);
+    }
+  }, [error, familyError]);
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) {
@@ -110,12 +115,23 @@ const TaskScreen = () => {
 
         {/* Tasks List */}
         <View className="flex-1 px-4 pt-4">
-          <TaskList
-            tasks={tasks}
-            isLoading={isLoadingTasks}
-            onToggleTask={handleToggleTask}
-            newlyAddedTaskId={newlyAddedTaskId}
-          />
+          {familyLoading && !family ? (
+            <View className="flex-1 justify-center items-center">
+              <Text className="text-lg text-gray-600 text-center mb-2">
+                Setting up your family...
+              </Text>
+              <Text className="text-sm text-gray-500 text-center">
+                This may take a few seconds for new accounts
+              </Text>
+            </View>
+          ) : (
+            <TaskList
+              tasks={tasks}
+              isLoading={isLoadingTasks}
+              onToggleTask={handleToggleTask}
+              newlyAddedTaskId={newlyAddedTaskId}
+            />
+          )}
         </View>
 
         {/* Floating Add Task Form */}

@@ -3,7 +3,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   onSnapshot,
   addDoc,
   updateDoc,
@@ -26,44 +25,74 @@ export function useTasks(familyId: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!familyId) return;
+    if (!familyId) {
+      setLoading(false);
+      return;
+    }
 
     const db = getDB();
     // Remove orderBy to avoid composite index requirement
     const q = query(collection(db, 'tasks'), where('familyId', '==', familyId));
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        try {
-          const newTasks: Task[] = snapshot.docs.map((docSnap) => ({
-            id: docSnap.id,
-            ...(docSnap.data() as Omit<Task, 'id'>),
-            createdAt: docSnap.data().createdAt?.toDate?.() ?? new Date(),
-          }));
+    // Add retry logic for permission errors
+    let retryCount = 0;
+    const maxRetries = 5;
+    const retryDelay = 1000; // 1 second
 
-          // Sort on client side - newest first
-          const sortedTasks = newTasks.sort((a, b) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
+    const setupSubscription = () => {
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          try {
+            const newTasks: Task[] = snapshot.docs.map((docSnap) => ({
+              id: docSnap.id,
+              ...(docSnap.data() as Omit<Task, 'id'>),
+              createdAt: docSnap.data().createdAt?.toDate?.() ?? new Date(),
+            }));
 
-          setTasks(sortedTasks);
-          setError(null);
-          setLoading(false);
-        } catch (err) {
-          console.error('Error processing tasks:', err);
-          setError('Failed to process tasks');
-          setLoading(false);
+            // Sort on client side - newest first
+            const sortedTasks = newTasks.sort((a, b) => {
+              return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+
+            setTasks(sortedTasks);
+            setError(null);
+            setLoading(false);
+            retryCount = 0; // Reset retry count on success
+          } catch (err) {
+            console.error('Error processing tasks:', err);
+            setError('Failed to process tasks');
+            setLoading(false);
+          }
+        },
+        (err) => {
+          console.error('Error listening to tasks:', err);
+          
+          // Check if it's a permission error and we haven't exceeded retry limit
+          if (err.code === 'permission-denied' && retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Retrying task subscription (attempt ${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+            
+            setTimeout(() => {
+              setupSubscription();
+            }, retryDelay * retryCount); // Exponential backoff
+          } else {
+            setError('Failed to load tasks - please check your connection');
+            setLoading(false);
+          }
         }
-      },
-      (err) => {
-        console.error('Error listening to tasks:', err);
-        setError('Failed to load tasks');
-        setLoading(false);
-      }
-    );
+      );
 
-    return () => unsubscribe();
+      return unsubscribe;
+    };
+
+    const unsubscribe = setupSubscription();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, [familyId]);
 
   const addTask = async (title: string) => {

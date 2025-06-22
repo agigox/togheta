@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
@@ -10,13 +10,11 @@ import * as SecureStore from 'expo-secure-store';
 import { auth } from '~/firebase';
 import {
   AUTH_STORAGE_KEYS,
-  UserData,
   isAuthTokenValid,
   clearAllAuthData,
-  storeUserPreferences,
-  getStoredUserPreferences,
   getStoredUserData,
 } from '~/shared/utils/authStorage';
+import { syncUserToFirestore, createFamily, updateUserFamilyId } from '~/firebase/families';
 
 type AuthContextType = {
   user: User | null;
@@ -110,6 +108,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Handle family setup for new users during signup
+  const handleUserFamilySetup = useCallback(async (firebaseUser: User) => {
+    try {
+      console.log('🏠 Setting up family for new user:', firebaseUser.email);
+      
+      // Create user document
+      await syncUserToFirestore({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        displayName: firebaseUser.displayName || undefined,
+      });
+      
+      // Create family and link to user
+      const familyId = await createFamily(firebaseUser.uid);
+      await updateUserFamilyId(firebaseUser.uid, familyId);
+      
+      console.log('✅ Family setup complete with ID:', familyId);
+    } catch (error) {
+      console.error('❌ Error setting up user family:', error);
+      if (error instanceof Error) {
+        console.error('Family setup error details:', error.message);
+      }
+      // Re-throw to handle in signup
+      throw error;
+    }
+  }, []);
+
   // Clear all persisted authentication data
   const clearPersistedData = async () => {
     await clearAllAuthData();
@@ -137,6 +162,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(firebaseUser);
           setIsAuthenticated(true);
           await persistAuthState(firebaseUser);
+          
+          // No family setup here - it should only happen during signup
         } else {
           // Firebase says not authenticated - but check if we have valid stored data
           const storedAuthState = await SecureStore.getItemAsync(AUTH_STORAGE_KEYS.AUTH_STATE);
@@ -176,6 +203,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('User signed up successfully:', userCredential.user.uid);
+      
+      // Setup family for new user
+      await handleUserFamilySetup(userCredential.user);
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
@@ -189,6 +219,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('User logged in successfully:', userCredential.user.uid);
+      
+      // No family setup during login - it should only happen during signup
+      // Family management is handled separately via useFamily hook
     } catch (error) {
       console.error('Login error:', error);
       throw error;
