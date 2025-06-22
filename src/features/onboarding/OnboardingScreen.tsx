@@ -9,7 +9,7 @@ import { LogoutButton } from '~/shared';
 
 export function OnboardingScreen() {
   const { user } = useAuthStore();
-  const { createNewFamily, joinFamily, familyLoading } = useFamilyStore();
+  const { createNewFamily, joinFamily } = useFamilyStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
@@ -128,7 +128,7 @@ export function OnboardingScreen() {
             <Button
               title="Start New Family"
               onPress={handleStartNewFamily}
-              loading={loading || familyLoading}
+              loading={loading}
               size="lg"
               fullWidth
             />
@@ -159,7 +159,7 @@ export function OnboardingScreen() {
                 <Button
                   title="Join Family"
                   onPress={handleJoinFamily}
-                  loading={loading || familyLoading}
+                  loading={loading}
                   disabled={inviteCode.length !== 6}
                   variant="primary"
                   fullWidth

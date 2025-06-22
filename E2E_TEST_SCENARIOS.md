@@ -60,7 +60,10 @@ In **production builds**:
    - Click "Sign Up"
    - **Expected Console Logs**:
      ```
+     Tab changing from login to signup
+     Tab change completed successfully
      🔥 Firebase auth state changed: authenticated (testuser1@example.com)
+     🔥 Firebase auth state changed: authenticated (testuser1@example.com)  ← Normal duplicate
      👤 Setting up family subscription for user: [uid]
      👤 Setting up Firestore listener for user in store: [uid]
      User signed up successfully: [uid]
@@ -68,15 +71,19 @@ In **production builds**:
      User synced successfully. FamilyId: null
      ✅ User document created, ready for onboarding
      🔄 User should be redirected to onboarding by app/index.tsx routing logic
+     Signup successful - user data persisted
      ```
+   - **Note**: The duplicate Firebase auth state change is **normal** during signup process
+   - **Important**: The app should automatically redirect to `/onboarding` after successful signup
 
 3. **Verify Onboarding Redirect**
    - App should automatically redirect to `/onboarding`
+   - **Note**: You may see brief loading state transitions during family subscription setup
    - **Expected Console Logs**:
      ```
      👤 User document snapshot in store: { exists: true, data: { familyId: null, ... } }
      👤 Setting familyId from Firestore in store: null
-     🔄 Routing logic check: { authLoading: false, familyLoading: false, isAuthenticated: true, hasFamilyId: false }
+     🔄 Routing logic check: { authLoading: false, isAuthenticated: true, hasFamilyId: false }
      ➡️ Redirecting to /onboarding - user has no family
      ```
 

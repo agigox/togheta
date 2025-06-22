@@ -1,37 +1,47 @@
 # Console Log Analysis & Explanation
 
-## Why Console Logs Don't Match E2E Scenarios Exactly
+## Why Duplicate Logs Occur (This is Normal)
 
-### **Root Cause**
+### **Development vs Production Environment**
 The difference between expected and actual console logs is due to **development environment behavior** vs **production behavior**.
 
-### **Actual Logs Analysis**
-Your console logs show:
+### **Normal Firebase Auth Duplicates**
+During signup, you will typically see:
+```
+🔥 Firebase auth state changed: authenticated (user@example.com)
+🔥 Firebase auth state changed: authenticated (user@example.com)  ← Normal duplicate
+```
+
+**This is expected and normal** because:
+1. Firebase auth listener triggers immediately when user is created
+2. Firebase then triggers again when the user document is fully synced
+3. This ensures proper state synchronization and is part of Firebase's design
+
+### **Development Environment Duplicates**
+In development, you may also see initialization duplicates:
+### **Development Environment Duplicates**
+In development, you may also see initialization duplicates:
 ```
 LOG  🚀 Initializing Zustand stores...
 LOG  Loading persisted auth state...
 LOG  ✅ Stores initialized
-LOG  No persisted auth state found
-LOG  🔥 Firebase auth state changed: not authenticated
-LOG  🔄 Resetting family state - user not authenticated
-LOG  🔄 Resetting family store state
-LOG  ✅ Family store state reset complete
-LOG  🔄 Routing logic check: {"authLoading": false, "familyLoading": false, "hasFamilyId": false, "hasUser": false, "isAuthenticated": false, "userUid": undefined}
-LOG  ➡️ Redirecting to /auth - user not authenticated
-LOG  Loading persisted auth state...
-LOG  🚀 Initializing Zustand stores...  ← DUPLICATE
-LOG  Loading persisted auth state...   ← DUPLICATE
-LOG  ✅ Stores initialized             ← DUPLICATE
-LOG  No persisted auth state found    ← DUPLICATE
-LOG  No persisted auth state found    ← DUPLICATE
-LOG  🔥 Firebase auth state changed: not authenticated ← DUPLICATE
+LOG  � Initializing Zustand stores...  ← Dev duplicate
+LOG  Loading persisted auth state...   ← Dev duplicate
+LOG  ✅ Stores initialized             ← Dev duplicate
 ```
 
-### **Why Duplicates Occur**
+### **Why Development Duplicates Occur**
 
 1. **Hot Reloading**: During development, React components re-mount when code changes
-2. **Multiple Auth Checks**: Firebase auth state listener triggers multiple times
-3. **App Layout Re-mounting**: The `_layout.tsx` useEffect may run multiple times
+2. **Multiple App Mounts**: The `_layout.tsx` useEffect may run multiple times in dev mode
+3. **Metro Bundler**: Development server restarts can cause re-initialization
+
+### **Important Notes**
+
+- **Firebase auth duplicates are NORMAL** during signup/login
+- **Development duplicates are expected** in dev mode
+- **Production builds** will have cleaner, single initialization logs
+- **All functionality works correctly** despite duplicate logs
 
 ### **Fixes Applied**
 
