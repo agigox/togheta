@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { useAuth } from '~/context/AuthContext';
+import { useAuthStore } from '~/stores';
 import { AuthScreen } from '~/features/auth';
 
 export default function Auth() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/tasks');
+      router.replace('/');
     }
   }, [isAuthenticated, router]);
 

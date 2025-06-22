@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '~/context/AuthContext';
+import { useAuthStore, useFamilyStore } from '~/stores';
 import Button from '~/shared/components/Button';
 import Input from '~/shared/components/Input';
-import { createFamily, joinFamilyWithCode, syncUserToFirestore } from '~/firebase/families';
+import { syncUserToFirestore } from '~/firebase/families';
 import { LogoutButton } from '~/shared';
 
 export function OnboardingScreen() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
+  const { createNewFamily, joinFamily, familyLoading } = useFamilyStore();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
@@ -31,8 +32,9 @@ export function OnboardingScreen() {
         displayName: user.displayName || undefined,
       });
       
-      // Create family and add user as admin
-      const familyId = await createFamily(user.uid, `${user.displayName || user.email?.split('@')[0]}'s Family`);
+      // Create family using Zustand store
+      const familyName = `${user.displayName || user.email?.split('@')[0]}'s Family`;
+      await createNewFamily(familyName, user.uid);
       
       Alert.alert(
         'Success!', 
@@ -43,8 +45,6 @@ export function OnboardingScreen() {
           onPress: () => router.replace('/tasks')
         }]
       );
-      
-      console.log('✅ Family created successfully with ID:', familyId);
     } catch (error) {
       console.error('❌ Error creating family:', error);
       Alert.alert(
@@ -84,7 +84,7 @@ export function OnboardingScreen() {
         displayName: user.displayName || undefined,
       });
       
-      await joinFamilyWithCode(user.uid, inviteCode.toUpperCase());
+      await joinFamily(inviteCode.toUpperCase(), user.uid);
       
       Alert.alert(
         'Success!', 
@@ -128,7 +128,7 @@ export function OnboardingScreen() {
             <Button
               title="Start New Family"
               onPress={handleStartNewFamily}
-              loading={loading}
+              loading={loading || familyLoading}
               size="lg"
               fullWidth
             />
@@ -159,7 +159,7 @@ export function OnboardingScreen() {
                 <Button
                   title="Join Family"
                   onPress={handleJoinFamily}
-                  loading={loading}
+                  loading={loading || familyLoading}
                   disabled={inviteCode.length !== 6}
                   variant="primary"
                   fullWidth

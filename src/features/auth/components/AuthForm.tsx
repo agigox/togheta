@@ -4,7 +4,7 @@ import { Button, Input } from '~/shared';
 import TabToggle from './TabToggle';
 import HeaderAuth from './AuthHeader';
 import SplashScreen from '~/shared/components/SplashScreen';
-import { useAuth } from '~/context/AuthContext';
+import { useAuthStore } from '~/stores';
 
 const AuthForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -17,7 +17,7 @@ const AuthForm: React.FC = () => {
     password?: string;
     confirmPassword?: string;
   }>({});
-  const { loading, login, signup } = useAuth();
+  const { loading, login, signup } = useAuthStore();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};

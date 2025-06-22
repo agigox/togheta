@@ -2,7 +2,7 @@
 
 ## 🧪 **Complete Testing Guide**
 
-This document provides comprehensive test scenarios to validate the entire onboarding and family management system from end to end.
+This document provides comprehensive test scenarios to validate the entire onboarding and family management system from end to end after the **Zustand migration**.
 
 ---
 
@@ -12,6 +12,7 @@ This document provides comprehensive test scenarios to validate the entire onboa
 2. **Device/Simulator**: iOS Simulator, Android Emulator, or physical device
 3. **Multiple Test Accounts**: Prepare 3-4 different email addresses for testing
 4. **Console Logs**: Keep developer console open to monitor logs
+5. **Zustand Stores**: App now uses Zustand for state management instead of Context/hooks
 
 ---
 
@@ -21,13 +22,28 @@ This document provides comprehensive test scenarios to validate the entire onboa
 
 ### **Steps**:
 1. **Open the app** (should show loading screen, then redirect to `/auth`)
+   - **Expected Console Logs**:
+     ```
+     🚀 Initializing Zustand stores...
+     Loading persisted auth state...
+     ✅ Stores initialized
+     No persisted auth state found
+     🔥 Firebase auth state changed: not authenticated
+     🔄 Resetting family store state
+     ✅ Family store state reset complete
+     ```
+
 2. **Sign up with new email** (e.g., `testuser1@example.com`)
    - Enter email and password
    - Click "Sign Up"
    - **Expected Console Logs**:
      ```
+     🔥 Firebase auth state changed: authenticated (testuser1@example.com)
+     👤 Setting up family subscription for user: [uid]
+     👤 Setting up Firestore listener for user in store: [uid]
      User signed up successfully: [uid]
      Syncing user to Firestore: testuser1@example.com
+     User synced successfully. FamilyId: null
      ✅ User document created, ready for onboarding
      🔄 User should be redirected to onboarding by app/index.tsx routing logic
      ```
@@ -36,8 +52,8 @@ This document provides comprehensive test scenarios to validate the entire onboa
    - App should automatically redirect to `/onboarding`
    - **Expected Console Logs**:
      ```
-     👤 User document snapshot: { exists: true, data: { familyId: null, ... } }
-     👤 Setting familyId from Firestore: null
+     👤 User document snapshot in store: { exists: true, data: { familyId: null, ... } }
+     👤 Setting familyId from Firestore in store: null
      🔄 Routing logic check: { authLoading: false, familyLoading: false, isAuthenticated: true, hasFamilyId: false }
      ➡️ Redirecting to /onboarding - user has no family
      ```
@@ -51,13 +67,21 @@ This document provides comprehensive test scenarios to validate the entire onboa
    - **Expected Console Logs**:
      ```
      🏠 Creating new family for user: testuser1@example.com
-     ✅ Family created successfully with ID: [familyId]
+     Syncing user to Firestore: testuser1@example.com
+     User synced successfully. FamilyId: null
+     🏠 Creating new family in store: testuser1's Family
+     ✅ Family created successfully in store: [familyId]
      ```
    - Should show success alert: "Welcome to your new family!"
    - Click "Continue" in alert
 
 6. **Verify Tasks Screen**
-   - Should redirect to `/tasks`
+   - Should redirect to `/tasks` **immediately** (no more waiting for family loading)
+   - **Expected Console Logs**:
+     ```
+     📋 Tasks route protection check: { authLoading: false, hasFamilyId: true, isAuthenticated: true }
+     📋 Subscribing to tasks for family: [familyId]
+     ```
    - Should show family name in header
    - Should show empty task list or welcome message
    - Should be able to add tasks
@@ -98,14 +122,19 @@ This document provides comprehensive test scenarios to validate the entire onboa
    - Click "Join Family"
    - **Expected Console Logs**:
      ```
-     🔗 Joining family with code: [code]
-     ✅ Successfully joined family: [familyId]
+     🔗 Joining family with code in store: [code]
+     ✅ Joined family successfully in store: [familyId]
      ```
    - Should show success alert: "Welcome to the family!"
    - Click "Continue"
 
 6. **Verify Tasks Screen**
-   - Should redirect to `/tasks`
+   - Should redirect to `/tasks` **immediately**
+   - **Expected Console Logs**:
+     ```
+     📋 Tasks route protection check: { authLoading: false, hasFamilyId: true, isAuthenticated: true }
+     📋 Subscribing to tasks for family: [familyId]
+     ```
    - Should show same family name as first user
    - Should see shared tasks (if any were created)
 
@@ -117,21 +146,29 @@ This document provides comprehensive test scenarios to validate the entire onboa
 
 ## 🎯 **Test Scenario 3: Existing User Login**
 
-### **Objective**: Test returning user login flow
+### **Objective**: Test returning user login flow with Zustand state restoration
 
 ### **Steps**:
 1. **Logout from current session** (use logout button)
    - Should redirect to `/auth`
+   - **Expected Console Logs**:
+     ```
+     🔄 Resetting family store state
+     ✅ Family store state reset complete
+     🔄 Resetting all stores...
+     ✅ All stores reset
+     ```
 
 2. **Login with existing account** (from Scenario 1 or 2)
    - Enter email and password
    - Click "Login"
    - **Expected Console Logs**:
      ```
-     User logged in successfully: [uid]
-     👤 User document snapshot: { exists: true, data: { familyId: "[familyId]", ... } }
-     👤 Setting familyId from Firestore: [familyId]
-     🔄 Routing logic check: { authLoading: false, familyLoading: false, isAuthenticated: true, hasFamilyId: true }
+     🔥 Firebase auth state changed: authenticated ([email])
+     👤 Setting up family subscription for user: [uid]
+     👤 User document snapshot in store: { exists: true, data: { familyId: "[familyId]", ... } }
+     👤 Setting familyId from Firestore in store: [familyId]
+     🔄 Routing logic check: { authLoading: false, hasFamilyId: true, isAuthenticated: true }
      ➡️ Redirecting to /tasks - user has family
      ```
 
@@ -142,79 +179,23 @@ This document provides comprehensive test scenarios to validate the entire onboa
 
 ---
 
-## 🎯 **Test Scenario 4: User Without Family Logs In**
+## 🎯 **Test Scenario 4: App State Persistence with Zustand**
 
-### **Objective**: Test edge case where existing user has no family
-
-### **Steps**:
-1. **Manually remove familyId from user document**
-   - In Firebase Console, edit the user document
-   - Delete the `familyId` field or set it to `null`
-
-2. **Login with that account**
-   - Should redirect to `/onboarding` (not `/tasks`)
-   - User can then create or join a family
-
----
-
-## 🎯 **Test Scenario 5: Task Management Between Family Members**
-
-### **Objective**: Test real-time task synchronization
-
-### **Prerequisites**: Complete Scenarios 1 & 2 (have 2 users in same family)
-
-### **Steps**:
-1. **User 1 adds a task**
-   - Login as first user
-   - Add task: "Buy groceries"
-   - Task should appear in list
-
-2. **User 2 sees the task**
-   - Login as second user (different device/browser)
-   - Should see the same task in real-time
-
-3. **User 2 completes the task**
-   - Mark "Buy groceries" as complete
-   - Should update in real-time
-
-4. **User 1 sees the update**
-   - Task should show as completed for User 1
-
----
-
-## 🎯 **Test Scenario 6: Error Handling**
-
-### **Objective**: Test error scenarios and edge cases
-
-### **Steps**:
-
-#### **6A: Network Issues**
-1. **Disconnect internet during signup**
-   - Should show appropriate error message
-   - Should not create partial data
-
-#### **6B: Duplicate Join Attempt**
-1. **Try to join same family twice**
-   - Use same invite code from Scenario 2
-   - Should show appropriate error (if prevented)
-
-#### **6C: Invalid Email Signup**
-1. **Try invalid email formats**
-   - Should show validation errors
-
-#### **6D: Weak Password**
-1. **Try weak passwords**
-   - Should show Firebase validation errors
-
----
-
-## 🎯 **Test Scenario 7: App State Persistence**
-
-### **Objective**: Test app state after restart
+### **Objective**: Test Zustand store persistence and app restart behavior
 
 ### **Steps**:
 1. **Login and navigate to tasks**
 2. **Close and reopen the app**
+   - **Expected Console Logs**:
+     ```
+     🚀 Initializing Zustand stores...
+     Loading persisted auth state...
+     Found valid persisted auth state - restoring user
+     Restoring user from secure storage: [email]
+     ✅ Stores initialized
+     🔥 Firebase auth state changed: authenticated ([email])
+     👤 Setting up family subscription for user: [uid]
+     ```
    - Should remember login state
    - Should redirect directly to `/tasks`
    - Should not require re-authentication
@@ -222,91 +203,219 @@ This document provides comprehensive test scenarios to validate the entire onboa
 3. **Test with airplane mode**
    - Turn on airplane mode
    - Reopen app
-   - Should still show cached data
-   - Should show appropriate offline state
+   - Should still show cached auth data
+   - Should handle offline gracefully
 
 ---
 
-## 🎯 **Test Scenario 8: Multiple Families (Edge Case)**
+## 🎯 **Test Scenario 5: Loading State Fixes**
 
-### **Objective**: Test user switching between families
+### **Objective**: Test that loading states don't get stuck
 
 ### **Steps**:
-1. **Create first family** (Scenario 1)
-2. **Remove user from family** (manually in Firebase)
-3. **User logs in again**
-   - Should redirect to onboarding
-   - Can create new family or join different one
+1. **Fresh app start**
+   - Should not get stuck on loading screen
+   - Should properly transition through auth states
+
+2. **Family creation**
+   - After creating family, should immediately go to tasks
+   - Should NOT wait for family data to load
+   - Family data can load in background
+
+3. **Monitor loading states**
+   - **Expected**: `familyLoading` should not block task page access
+   - **Expected**: Only `authLoading` should block navigation
+   - **Expected**: No infinite loading loops
+---
+
+## 🎯 **Test Scenario 6: Task Management Between Family Members**
+
+### **Objective**: Test real-time task synchronization with Zustand stores
+
+### **Prerequisites**: Complete Scenarios 1 & 2 (have 2 users in same family)
+
+### **Steps**:
+1. **User 1 adds a task**
+   - Login as first user
+   - Add task: "Buy groceries"
+   - **Expected Console Logs**:
+     ```
+     📋 Subscribing to tasks for family: [familyId]
+     Adding task to family [familyId]: Buy groceries
+     ✅ Task added successfully: [taskId]
+     ```
+   - Task should appear in list
+
+2. **User 2 sees the task**
+   - Login as second user (different device/browser)
+   - Should see the same task in real-time
+   - **Expected Console Logs**:
+     ```
+     📋 Tasks snapshot updated: 1 tasks
+     ```
+
+3. **User 2 completes the task**
+   - Mark "Buy groceries" as complete
+   - Should update in real-time with Zustand store
+
+4. **User 1 sees the update**
+   - Task should show as completed for User 1
+   - Should update automatically via Firestore subscription
+
+---
+
+## 🎯 **Test Scenario 7: Error Handling with Zustand**
+
+### **Objective**: Test error scenarios and Zustand error states
+
+### **Steps**:
+
+#### **7A: Network Issues**
+1. **Disconnect internet during signup**
+   - Should show appropriate error message in Zustand store
+   - Should not create partial data
+   - Error should be stored in auth store state
+
+#### **7B: Family Creation Errors**
+1. **Test family creation with network issues**
+   - Should set error in family store
+   - Should reset `familyLoading` to false
+   - Should show user-friendly error message
+
+#### **7C: Parameter Order Bug Prevention**
+1. **Test family creation with proper parameters**
+   - Should pass `userId` first, then `familyName`
+   - Should NOT see "No document to update" errors
+   - Should create family successfully
+
+#### **7D: Loading State Issues**
+1. **Monitor for stuck loading states**
+   - Family creation should not cause infinite loading
+   - Tasks page should load immediately after family creation
+   - `familyLoading` should not block essential navigation
+
+---
+
+## 🎯 **Test Scenario 8: Zustand Store State Management**
+
+### **Objective**: Test Zustand store behavior and state consistency
+
+### **Steps**:
+
+#### **8A: Store Initialization**
+1. **App startup should initialize all stores**
+   - Auth store should set up Firebase listener
+   - Family store should be in initial state
+   - Tasks store should be in initial state
+
+#### **8B: Store Reset on Logout**
+1. **Logout should reset all stores**
+   - Family store should be reset
+   - Tasks store should be reset  
+   - Auth store should clear user data
+
+#### **8C: Store Subscriptions**
+1. **Family subscription should work correctly**
+   - Should set up when user is authenticated
+   - Should clean up when user logs out
+   - Should not cause memory leaks
+
+#### **8D: Cross-Store Dependencies**
+1. **Stores should work together properly**
+   - Auth changes should trigger family subscription setup
+   - Family ID changes should trigger task subscription
+   - Loading states should be managed independently
 
 ---
 
 ## 📋 **Expected Results Summary**
 
-| Scenario | Expected Route | Firebase State | Notes |
-|----------|---------------|----------------|--------|
-| New Signup | `/auth` → `/onboarding` | User doc with `familyId: null` | Should NOT auto-create family |
-| Create Family | `/onboarding` → `/tasks` | User has `familyId`, family exists | Success alert shown |
-| Join Family | `/onboarding` → `/tasks` | User added to existing family | Validates invite code |
-| Existing Login | `/auth` → `/tasks` | User has existing `familyId` | Skips onboarding |
-| No Family Login | `/auth` → `/onboarding` | User has `familyId: null` | Needs family setup |
+| Scenario | Expected Route | Zustand Store State | Notes |
+|----------|---------------|-------------------|--------|
+| New Signup | `/auth` → `/onboarding` | Auth: authenticated, Family: no familyId | Zustand manages loading states |
+| Create Family | `/onboarding` → `/tasks` | Family: has familyId, loading: false | **Immediate redirect** - no waiting |
+| Join Family | `/onboarding` → `/tasks` | Family: joined existing family | Parameter order fixed |
+| Existing Login | `/auth` → `/tasks` | Auth: restored from SecureStore | Zustand persistence working |
+| No Family Login | `/auth` → `/onboarding` | Family: reset state | Proper state management |
 
 ---
 
-## 🔍 **Debugging Checklist**
+## 🔍 **Debugging Checklist for Zustand Migration**
 
 If any scenario fails, check:
 
-### **Console Logs**
-- [ ] Authentication state changes logged
-- [ ] Firestore document creation logged
-- [ ] Routing decisions logged
-- [ ] Family operations logged
+### **Zustand Store Logs**
+- [ ] Store initialization logged: `🚀 Initializing Zustand stores...`
+- [ ] Store reset operations logged: `🔄 Resetting family store state`
+- [ ] Family operations logged with store context
+- [ ] Auth state changes reflected in stores
 
-### **Firebase Console**
-- [ ] User documents created correctly
-- [ ] Family documents have all required fields
-- [ ] Member subcollections populated
-- [ ] Invite codes are unique
+### **Loading State Management**
+- [ ] `authLoading` managed correctly
+- [ ] `familyLoading` doesn't block essential navigation
+- [ ] No infinite loading loops
+- [ ] Loading states reset properly
 
-### **App Navigation**
-- [ ] Loading states shown appropriately
-- [ ] Redirects happen automatically
-- [ ] No infinite redirect loops
-- [ ] Back navigation works correctly
+### **Firebase Integration**
+- [ ] Zustand stores integrate with Firebase correctly
+- [ ] Subscriptions set up and cleaned up properly
+- [ ] Error states managed in stores
+- [ ] Real-time updates reflected in Zustand state
+
+### **Parameter Order (Critical Fix)**
+- [ ] `createFamily(userId, familyName)` - correct order
+- [ ] `joinFamilyWithCode(userId, inviteCode)` - correct order
+- [ ] No "No document to update" errors
 
 ---
 
-## 🚨 **Common Issues & Solutions**
+## 🚨 **Common Issues & Solutions (Updated)**
 
 ### **Issue: User stays on loading screen**
-- **Check**: AuthContext loading state
-- **Check**: useUserFamily hook loading state
-- **Solution**: Verify Firebase connection
+- **Check**: Zustand auth store loading state
+- **Check**: Family store loading state
+- **Solution**: Verify store initialization and Firebase connection
 
-### **Issue: User goes to tasks instead of onboarding**
-- **Check**: User document `familyId` field
-- **Check**: useUserFamily hook logs
-- **Solution**: Ensure `familyId` is `null` for new users
+### **Issue: "No document to update" error**
+- **Check**: Parameter order in family store methods
+- **Solution**: Ensure `userId` is passed first, not `familyName`
 
-### **Issue: Invite code doesn't work**
-- **Check**: Family document has `inviteCode` field
-- **Check**: Code is exactly 6 characters
-- **Check**: Firebase security rules allow reading families
+### **Issue: Tasks page stuck loading**
+- **Check**: Remove dependency on `familyLoading` for navigation
+- **Solution**: Only check `authLoading` and `hasFamilyId` for routing
 
-### **Issue: Tasks don't sync between users**
-- **Check**: Both users have same `familyId`
-- **Check**: Firestore security rules
-- **Check**: Task documents have correct `familyId`
+### **Issue: Store state not persisting**
+- **Check**: SecureStore integration in auth store
+- **Check**: Store initialization on app startup
+- **Solution**: Verify persistent state loading
+
+### **Issue: Family subscription not working**
+- **Check**: Subscription setup in family store
+- **Check**: Cleanup on user logout
+- **Solution**: Verify useEffect dependencies in index route
 
 ---
 
-## 🎯 **Success Criteria**
+## 🎯 **Success Criteria (Updated for Zustand)**
 
-✅ **All scenarios complete without errors**  
-✅ **Console logs show expected messages**  
-✅ **Firebase data matches expectations**  
-✅ **Real-time updates work correctly**  
-✅ **Error handling works appropriately**  
-✅ **App state persists across restarts**
+✅ **All Zustand stores initialize correctly**  
+✅ **Loading states managed properly (no infinite loops)**  
+✅ **Family creation works without parameter errors**  
+✅ **Tasks page loads immediately after family creation**  
+✅ **Store state persists across app restarts**  
+✅ **Real-time updates work with Zustand integration**  
+✅ **Error handling works in all stores**  
+✅ **Store cleanup works on logout**
 
-Run through all scenarios systematically to ensure the complete onboarding system works end-to-end!
+Run through all scenarios systematically to ensure the Zustand migration is working correctly end-to-end!
+
+## 🔄 **Migration Verification Checklist**
+
+- [ ] No more Context Provider dependencies
+- [ ] All components use Zustand store hooks
+- [ ] Store subscriptions replace useEffect hooks
+- [ ] Loading state logic simplified
+- [ ] Parameter order bugs fixed
+- [ ] Real-time sync still working
+- [ ] Error states properly managed
+- [ ] App performance improved

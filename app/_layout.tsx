@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { AuthProvider } from '~/context/AuthContext';
+import { initializeStores } from '~/stores/init';
 import '../global.css';
 import {
   useFonts,
@@ -19,6 +21,11 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  // Initialize Zustand stores
+  useEffect(() => {
+    initializeStores();
+  }, []);
 
   if (!fontsLoaded) {
     return <SplashScreen />;

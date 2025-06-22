@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Text, Alert, View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTasks } from '../../hooks/useTasks';
-import { useAuth } from '~/context/AuthContext';
-import { useFamily } from '~/hooks/useFamily';
+import { useFamilyStore, useTasksStore } from '~/stores';
 import { LogoutButton } from '~/shared';
 import TaskHeader from './components/TaskHeader';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
 import { Link } from 'expo-router';
+
 const TaskScreen = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,15 +15,21 @@ const TaskScreen = () => {
   // Keep track of timeout to clean it up if needed
   const [highlightTimeout, setHighlightTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Get authenticated user and family
-  const { user } = useAuth();
-  const { family, loading: familyLoading, error: familyError } = useFamily();
+  // Get authenticated user and family from stores
+  const { familyId, family, familyLoading, error: familyError } = useFamilyStore();
+  const { tasks, loading: isLoadingTasks, error, addTask, toggleTask, subscribeToTasks } = useTasksStore();
 
-  // Wait for family to be loaded before using familyId to prevent permission errors
-  const familyId = family?.id || (familyLoading ? '' : user?.uid || 'anonymous');
-
-  // Use the custom hook
-  const { tasks, loading: isLoadingTasks, error, addTask, toggleTask } = useTasks(familyId);
+  // Subscribe to tasks when familyId is available
+  useEffect(() => {
+    if (familyId) {
+      console.log('📋 Subscribing to tasks for family:', familyId);
+      const unsubscribe = subscribeToTasks(familyId);
+      return unsubscribe;
+    } else {
+      // Reset tasks if no family
+      useTasksStore.getState().reset();
+    }
+  }, [familyId, subscribeToTasks]);
 
   // Handle Firebase errors
   useEffect(() => {
@@ -44,7 +49,7 @@ const TaskScreen = () => {
     setIsLoading(true);
     try {
       const currentTitle = newTaskTitle.trim();
-      await addTask(currentTitle);
+      await addTask(currentTitle, familyId || '');
       setNewTaskTitle('');
 
       // Dismiss the keyboard
@@ -76,7 +81,7 @@ const TaskScreen = () => {
 
   const handleToggleTask = async (taskId: string, currentStatus: boolean) => {
     try {
-      await toggleTask(taskId, currentStatus);
+      await toggleTask(taskId);
     } catch (error) {
       console.error('Error toggling task:', error);
       Alert.alert('Error', 'Failed to update task');

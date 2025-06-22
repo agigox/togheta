@@ -1,10 +1,11 @@
 import React from 'react';
 import { Alert } from 'react-native';
 import { Button } from '~/shared';
-import { useAuth } from '~/context/AuthContext';
+import { useAuthStore } from '~/stores';
+import { resetAllStores } from '~/stores/init';
 
 const LogoutButton: React.FC = () => {
-  const { logout, user } = useAuth();
+  const { logout, user } = useAuthStore();
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -15,6 +16,7 @@ const LogoutButton: React.FC = () => {
         onPress: async () => {
           try {
             await logout();
+            resetAllStores();
           } catch (error) {
             console.error('Logout error:', error);
             Alert.alert('Error', 'Failed to sign out. Please try again.');

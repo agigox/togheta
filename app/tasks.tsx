@@ -1,24 +1,23 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { useAuth } from '~/context/AuthContext';
-import { useUserFamily } from '~/hooks/useUserFamily';
+import { useAuthStore, useFamilyStore } from '~/stores';
 import { TaskScreen } from '~/features/tasks';
 import { LoadingScreen } from '~/shared';
 
 export default function Tasks() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const { hasFamilyId, loading: familyLoading } = useUserFamily();
+  const { isAuthenticated, loading: authLoading } = useAuthStore();
+  const { hasFamilyId } = useFamilyStore();
   const router = useRouter();
 
   useEffect(() => {
     console.log('📋 Tasks route protection check:', {
       isAuthenticated,
       hasFamilyId,
-      authLoading,
-      familyLoading
+      authLoading
     });
     
-    if (!authLoading && !familyLoading) {
+    // Only check auth loading and essential states
+    if (!authLoading) {
       if (!isAuthenticated) {
         console.log('📋 Tasks: Redirecting to /auth - not authenticated');
         router.replace('/auth');
@@ -26,12 +25,13 @@ export default function Tasks() {
         console.log('📋 Tasks: Redirecting to /onboarding - no family');
         router.replace('/onboarding');
       }
-      // If user is authenticated and has family, stay on tasks
+      // If user is authenticated and has family ID, show tasks
+      // (family data can load in the background)
     }
-  }, [isAuthenticated, hasFamilyId, authLoading, familyLoading, router]);
+  }, [isAuthenticated, hasFamilyId, authLoading, router]);
 
-  // Show loading while checking authentication and family status
-  if (authLoading || familyLoading) {
+  // Show loading while checking authentication status
+  if (authLoading) {
     return <LoadingScreen message="Loading tasks..." />;
   }
 

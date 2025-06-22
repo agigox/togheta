@@ -1,6 +1,14 @@
 // Mock Firebase Firestore
 const jest = global.jest || require('jest-mock');
+
+const mockFirestore = {
+  collection: jest.fn(),
+  doc: jest.fn(),
+  query: jest.fn(),
+};
+
 module.exports = {
+  getFirestore: jest.fn(() => mockFirestore),
   doc: jest.fn(),
   getDoc: jest.fn(),
   setDoc: jest.fn(),
