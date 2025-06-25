@@ -157,6 +157,7 @@ export const useAuthStore = create<AuthState>()(
           await loadPersistedAuthState();
 
           // Set up Firebase auth state listener
+          console.log('------------->', auth)
           const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             console.log(
               '🔥 Firebase auth state changed:',

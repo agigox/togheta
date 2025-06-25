@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
-import { AuthProvider } from '~/context/AuthContext';
 import { initializeStores } from '~/stores/init';
 import '../global.css';
 import {
@@ -32,13 +31,11 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
       <Stack screenOptions={{ headerShown: true }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="tasks" />
         <Stack.Screen name="family" />
       </Stack>
-    </AuthProvider>
   );
 }
